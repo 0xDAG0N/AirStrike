@@ -3,6 +3,11 @@ import re
 import sys
 from scapy.all import sniff
 from scapy.layers.dot11 import Dot11, Dot11ProbeReq, Dot11Elt
+
+try:
+    from web.shared import run_with_sudo as shared_run_with_sudo
+except Exception:
+    shared_run_with_sudo = None
 def set_monitor_mode(interface_name):
     """
     Set wireless interface to monitor mode.
@@ -131,12 +136,31 @@ def reset_wifi_mode(interface='wlan0'):
 
 global available_aps
 def run_scan(interface):
+    """
+    Scan for Wi-Fi networks on the given interface.
+
+    Returns:
+        tuple[list, str|None]: (networks, error message)
+    """
     available_aps = []
     try:
-        if(is_monitor_mode(interface)):
+        if is_monitor_mode(interface):
             reset_wifi_mode(interface)
-        result = subprocess.run(['iwlist', interface, 'scanning'], capture_output=True, text=True, check=True)
-        output = result.stdout
+
+        if shared_run_with_sudo:
+            success, output, stderr = shared_run_with_sudo(f"iwlist {interface} scanning")
+            if not success:
+                error_msg = stderr.strip() or f"Failed to scan interface {interface}"
+                return [], error_msg
+        else:
+            result = subprocess.run(
+                ['iwlist', interface, 'scanning'],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            output = result.stdout
+
         aps = []
         lines = output.split('\n')
         ap = {}
@@ -181,11 +205,16 @@ def run_scan(interface):
             aps.append(ap)
 
         available_aps = aps
-        return available_aps
+        return available_aps, None
 
     except subprocess.CalledProcessError as e:
-        print(f"Error scanning APs: {e}")
-        return []
+        error_msg = (e.stderr or "").strip() or str(e)
+        print(f"Error scanning APs: {error_msg}")
+        return [], error_msg
+    except Exception as e:
+        error_msg = str(e)
+        print(f"Error scanning APs: {error_msg}")
+        return [], error_msg
 
 
 
@@ -304,8 +333,11 @@ if __name__ == "__main__":
     # 1. Scan for Networks
     #banner("AirStrike")
 
-    available_aps = run_scan(wireless_interface)
-    print(available_aps)
+    available_aps, scan_error = run_scan(wireless_interface)
+    if scan_error:
+        print(f"[-] Scan error: {scan_error}")
+    else:
+        print(available_aps)
 
     # 2. Let the user choose
     chosen_bssid = None
@@ -327,7 +359,7 @@ if __name__ == "__main__":
         # some_other_function(chosen_bssid, chosen_channel)
         pass # Placeholder, indicates successful selection without printing here
 
-    else:
+    elif not scan_error:
         # This message is kept as it indicates failure/cancellation
         print("\nNo AP was selected or process cancelled.")
 
