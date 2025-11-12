@@ -1,175 +1,84 @@
-```
-                            _     _        ____   _          _  _
-                           / \   (_) _ __ / ___| | |_  _ __ (_)| | __  ___ 
-                          / _ \  | || '__|\___ \ | __|| '__|| || |/ / / _ \
-                         / ___ \ | || |    ___) || |_ | |   | ||   < |  __/
-                        /_/   \_\|_||_|   |____/  \__||_|   |_||_|\_\ \___|
-```
+# AirStrike
 
-AirStrike is a modular, Python-based WiFi hacking framework developed as a graduation project. It provides powerful tools for:
-
-- **Deauthentication Attacks**: Force clients to disconnect from their access point.
-- **WPA/WPA2 Handshake Capture & Cracking**: Capture four-way handshakes and attempt to recover the network password using a wordlist.
-- **Evil Twin Attack**: Clone a legitimate Wi-Fi network to trick users into connecting to a rogue access point, allowing interception of data or further attacks like phishing or DNS spoofing.
-
-> ⚠️ **Warning:** AirStrike is intended for educational and authorized penetration testing only. Unauthorized use against networks you do not own or have permission to test is illegal and unethical.
-
----
+AirStrike is a Flask-based wireless security assessment platform that exposes common Wi-Fi reconnaissance and attack workflows through a modern web dashboard. The application bundles scanning utilities, automated attack orchestration, capture management, and diagnostics into an interface that is easy to operate once the host has the required wireless tooling.
 
 ## Features
 
-1. **Deauthentication Attack** (`deauth_attack.py`)
+- **Web dashboard** that tracks scan, attack, and capture metrics in real time and provides quick links to all major workflows.
+- **Network scanning** endpoints that enumerate nearby access points and sniff probe requests with configurable interfaces and durations.
+- **Attack automation** for deauthentication, handshake capture, evil twin, denial of service, and KARMA-style attacks with live Socket.IO status updates.
+- **Result management** for viewing stored captures and logs produced by previous runs.
+- **Diagnostics & settings** pages to verify wireless interface state, adjust defaults such as the monitored interface or wordlist, and review application logs.
+- **Socket.IO integration** for streaming attack state, log output, and background task progress to the browser without manual refreshes.
 
-   - Scan for nearby WiFi networks.
-   - Select an AP by BSSID and channel.
-   - Switch your wireless interface to monitor mode.
-   - Launch a continuous deauth flood targeting all clients or a specific client.
-   - Automatically restore the interface to managed mode when finished.
-
-2. **Handshake Capture & Cracker** (`capture_attack.py` + handshake logic in `main.py`)
-
-   - Scan and select the target AP.
-   - Capture EAPOL (four-way handshake) packets by pairing a deauth flood with a packet capture.
-   - Validate captured handshakes using `tshark`.
-   - Crack the handshake offline with `aircrack-ng` and a provided wordlist.
-
-3. **Evil Twin Attack** (`evil_twin.py`)
-
-   - Set up a rogue access point with the same SSID and channel as the target.
-   - Respond to client connection attempts and enable redirection/sniffing potential.
-
-> Other modules (`mitm.py`) are scaffolded for future expansion.
-
----
-
-## Repository Structure
+## Project Structure
 
 ```
-├── attacks
-│   ├── capture_attack.py      # Worker for capturing WPA handshakes
-│   ├── deauth_attack.py       # Worker for performing deauthentication floods
-│   ├── evil_twin.py           # Evil Twin attack module
-│   ├── mitm.py                # (Planned) Man-in-the-Middle module
-│   └── __init__.py
-├── utils
-│   ├── banner.py              # ASCII art and team banner
-│   └── network_utils.py       # Scanning, mode-switching, and AP selection helpers
-├── main.py                    # CLI menu and orchestration
-├── captures                   # Directory for saving handshake
-│   └── 10-A4-DA-1C-00-00      # sub-dir for every AP with its BSSID
-├── requirements.txt           # Python package dependencies
-└── README.md                  # This documentation
+├── run.py                # Entry point that enforces root execution and starts the Socket.IO server
+├── web/                  # Flask blueprints, templates, static assets, and shared configuration
+│   ├── app.py            # Flask application factory and blueprint registration
+│   ├── scan/             # Network scanning routes and helpers
+│   ├── attacks/          # Attack orchestration, helpers, and Socket.IO events
+│   ├── results/          # Capture/result viewing routes
+│   ├── diagnostics/      # Health checks and interface diagnostics
+│   ├── settings/         # User-configurable application defaults
+│   └── templates/        # Dashboard, scan, attack, results, diagnostics, and error views
+├── utils/
+│   └── network_utils.py  # Wireless interface helpers and packet sniffing utilities
+├── attacks/              # Lower-level attack implementations and scripts
+├── requirements.txt      # Python dependencies
+└── LICENSE
 ```
 
----
+## Requirements
 
-## Prerequisites
+AirStrike targets Linux systems with wireless hardware capable of monitor mode. The application expects the following system-level prerequisites:
 
-- **Operating System:** Linux (e.g., Kali, Ubuntu).
-- **Wireless NIC**: A network interface card that supports monitor mode, AP mode, and packet injection
-- **Root Privileges:** Many operations require `sudo` (monitor mode, channel lock).
-- **Installed Tools:**
-  - `iwconfig` / `aircrack-ng` suite
-  - `tshark` (part of Wireshark CLI)
+- Python 3.9+
+- Wireless tools such as `iw`, `iwconfig`, `ifconfig`, and `iwlist`
+- Packet manipulation libraries like `scapy`
+- Root (UID 0) privileges to switch interfaces into monitor mode and run attacks
 
-## Installation
+All Python dependencies are listed in `requirements.txt` and can be installed with `pip`.
 
-1. **Clone the repository**
+```bash
+pip install -r requirements.txt
+```
 
-   ```bash
-   git clone https://github.com/yourusername/airstrike.git
-   cd airstrike
-   ```
+## Running the Application
 
-2. **Install Python dependencies**
-
-   ```bash
-   sudo apt update
-   sudo apt install -y python3-pip aircrack-ng tshark
-   pip3 install -r requirements.txt
-   ```
-
-3. **Set up your wireless interface**
-
-   - Identify your WiFi interface (e.g., `wlan0`):
-     ```bash
-     iwconfig
-     ```
-   - Confirm it supports monitor mode.
-     ```bash
-     iw list | grep -A 10 "Supported interface modes"
-     ```
-
----
-
-## Usage
-
-1. **Run the main script**
+1. **Ensure root access**. AirStrike enforces root execution. Launching `run.py` as a non-root user will terminate with a warning.
+2. **Install dependencies** using the command above.
+3. **Start the web interface**:
 
    ```bash
-   sudo python3 main.py
+   sudo python run.py
    ```
 
-2. **Main Menu**
+   On startup, the script:
 
-   ```text
-   ========================================
-   AirStrike - Main Menu
-   ========================================
-   1. Deauth Attack
-   2. Handshake Cracker
-   3. Evil Twin Attack
-   4. MITM Attack (Coming Soon)
-   0. Exit
-   ```
+   - Adds `127.0.0.1 airstrike.local` to `/etc/hosts` if missing.
+   - Creates the capture output directory configured in `web/shared.py`.
+   - Exposes the dashboard at `http://airstrike.local:5000`.
 
-3. **Deauthentication Attack**
+4. **Open the dashboard** in a browser and use the sidebar to scan networks, launch attacks, review results, or adjust settings.
 
-   - Choose option `1`.
-   - Scan results display nearby APs: select one by index.
-   - AirStrike switches to monitor mode and locks channel.
-   - Press `Ctrl+C` to stop the attack.
-   - Interface is restored to managed mode and returns to main menu.
+## Configuration
 
-4. **Handshake Cracker**
+Global settings live in `web/shared.py`. Key defaults include:
 
-   - Choose option `2`.
-   - Select the target AP.
-   - If no previous capture, AirStrike starts a capture thread and deauth flood concurrently.
-   - Captured handshake is validated (`tshark`).
-   - If valid, launch `aircrack-ng` with the default wordlist (`/usr/share/wordlists/rockyou.txt`).
-   - Cracking results (found password or failure) are printed on screen.
+- `interface`: Wireless interface to operate on (defaults to `wlan0`).
+- `wordlist`: Path to the wordlist used for password attacks.
+- `output_dir`: Directory where capture files and attack logs are stored.
 
-5. **Evil Twin Attack**
+These values can be customized via the Settings page in the web UI or by editing the file directly.
 
-   - Choose option `3`.
-   - Clone a legitimate access point by entering the SSID and channel.
-   - AirStrike sets up a fake AP using hostapd and dnsmasq, and optionally runs dnsspoof for DNS redirection.
-   - Great for simulating rogue AP attacks or testing captive portals.
+## Development Notes
 
-6. **MITM Attack** *(Planned)*
-
-   - Will simulate classic man-in-the-middle scenarios such as ARP poisoning, SSL stripping, and credential interception.
-   - Currently under development and will be available in future versions.
-
----
-
-## Wordlist and Captures
-
-- Default wordlist path: `/usr/share/wordlists/rockyou.txt`. You can modify `wordlist` in `main.py`.
-- Captured handshakes are stored under:
-  ```
-  ./captures/<BSSID-MAC>/capture-01.cap
-  ```
-
----
-
-## Contributing
-
-Contributions, bug reports, and feature requests are welcome! Please open an issue or pull request on GitHub.
-
----
+- Socket.IO events are defined in `web/socket_io.py` and used by the scan and attack blueprints for realtime updates.
+- Attack helpers emit log messages through `web.shared.log_message`, ensuring output is visible both in the console and on the dashboard.
+- Utility functions in `utils/network_utils.py` manage interface mode transitions and sniff probe requests with Scapy.
 
 ## Disclaimer
 
-Use AirStrike responsibly. Only test on networks you own or have explicit permission to test. The author is not responsible for misuse.
+AirStrike is intended for authorized penetration testing and research on networks you own or have explicit permission to assess. Misuse of this software may violate local laws and regulations. Use responsibly.
