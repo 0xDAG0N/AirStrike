@@ -190,16 +190,4 @@ export const statsApi = {
      * @returns {Promise} - Promise resolving to the dashboard statistics
      */
     getDashboardStats: () => apiGet('/dashboard_stats')
-};
-
-/**
- * API functions for scanning
- */
-export const scanApi = {
-    /**
-     * Sniff probe requests to discover networks
-     * @param {number} duration - Duration to sniff in seconds
-     * @returns {Promise<Array>} Array of discovered SSIDs
-     */
-    sniffProbeRequests: (duration) => apiGet(`/sniff_probe_requests?duration=${duration}`)
 }; 

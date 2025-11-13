@@ -11,7 +11,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')
 
 from web.shared import logger, config, is_sudo_authenticated
 from .helpers import scan_wifi_networks, check_interface_status
-from utils import network_utils
 
 scan_bp = Blueprint('scan', __name__)
 
@@ -69,45 +68,4 @@ def scan_wifi():
             'success': False, 
             'error': 'Internal server error',
             'interface_status': interface_status
-        }), 500
-        
-        
-@scan_bp.route('/sniff_probe_requests')
-def sniff_probe_requests():
-    """
-    Sniff for probe requests on the configured interface.
-    
-    Query Parameters:
-        interface (str): Optional. Network interface to use
-        duration (int): Optional. Duration to sniff in seconds (5-60)
-    
-    Returns:
-        JSON array of detected SSIDs
-    """
-    interface = request.args.get('interface', config['interface'])
-    
-    try:
-        # Get duration from query params, default to 20 seconds
-        duration = request.args.get('duration', '20')
-        duration = int(duration)
-        
-        # Validate duration
-        if duration < 5 or duration > 60:
-            return jsonify({
-                'success': False,
-                'error': 'Duration must be between 5 and 60 seconds'
-            }), 400
-            
-        ssids = network_utils.sniff_probe_requests(interface, duration)
-        return jsonify(ssids)
-    except ValueError:
-        return jsonify({
-            'success': False,
-            'error': 'Invalid duration parameter'
-        }), 400
-    except Exception as e:
-        logger.error(f"Error sniffing probe requests: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': str(e)
         }), 500

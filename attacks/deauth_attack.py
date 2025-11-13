@@ -120,4 +120,3 @@ def deauth_worker_for_handshake(target_bssid, target_client, network_interface, 
             time.sleep(1)
 
     print("[Deauth Thread] Stopped.")
-
