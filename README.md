@@ -1,4 +1,10 @@
-# AirStrike
+```
+                            _     _        ____   _          _  _
+                           / \   (_) _ __ / ___| | |_  _ __ (_)| | __  ___ 
+                          / _ \  | || '__|\___ \ | __|| '__|| || |/ / / _ \
+                         / ___ \ | || |    ___) || |_ | |   | ||   < |  __/
+                        /_/   \_\|_||_|   |____/  \__||_|   |_||_|\_\ \___|
+```
 
 AirStrike is a Flask + Socket.IO web interface for orchestrating Wi-Fi assessment tools from a browser.  
 This build intentionally focuses on the three most stable attacks in the suite: **Deauthentication**, **Cracking (handshake capture + aircrack-ng)**, and **Evil Twin**.
