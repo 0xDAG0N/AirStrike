@@ -9,9 +9,27 @@ import logging
 
 # Add the project root directory to Python path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-from web.shared import config, logger, init_logging
+from web.shared import config, logger, init_logging, is_running_as_root
 from web.socket_io import socketio, init_socketio
+
+def _enforce_root_execution():
+    """
+    Ensure the web application is always started with root privileges.
+    Without UID 0 the attack threads (Scapy, airodump, etc.) silently fail.
+    """
+    if os.environ.get('AIRSTRIKE_SKIP_ROOT_CHECK') == '1':
+        logger.warning("AIRSTRIKE_SKIP_ROOT_CHECK=1 detected. Running without root; attacks may fail.")
+        return
+
+    if not is_running_as_root():
+        message = (
+            "AirStrike must be run with root privileges! "
+            "Restart using 'sudo python run.py' or the provided start.sh script."
+        )
+        logger.critical(message)
+        raise SystemExit(message)
+
+_enforce_root_execution()
 
 # Initialize Flask app
 app = Flask(__name__)
