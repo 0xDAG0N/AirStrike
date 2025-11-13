@@ -1,90 +1,64 @@
-```
-                            _     _        ____   _          _  _
-                           / \   (_) _ __ / ___| | |_  _ __ (_)| | __  ___ 
-                          / _ \  | || '__|\___ \ | __|| '__|| || |/ / / _ \
-                         / ___ \ | || |    ___) || |_ | |   | ||   < |  __/
-                        /_/   \_\|_||_|   |____/  \__||_|   |_||_|\_\ \___|
-```
+# AirStrike
 
-AirStrike is a Flask-based wireless security assessment platform that exposes common Wi-Fi reconnaissance and attack workflows through a modern web dashboard. The application bundles scanning utilities, automated attack orchestration, capture management, and diagnostics into an interface that is easy to operate once the host has the required wireless tooling.
+AirStrike is a Flask + Socket.IO web interface for orchestrating Wi-Fi assessment tools from a browser.  
+This build intentionally focuses on the three most stable attacks in the suite: **Deauthentication**, **Cracking (handshake capture + aircrack-ng)**, and **Evil Twin**.
 
-## Features
+## Supported Attacks
+- **Deauthentication** – kicks associated clients off the selected AP by flooding crafted 802.11 deauth frames.
+- **Cracking (Handshake)** – captures WPA/WPA2 handshakes while simultaneously brute-forcing them with `aircrack-ng` and a configurable wordlist.
+- **Evil Twin** – clones the target SSID via `hostapd`/`dnsmasq`, sets up DHCP/DNS spoofing, and can optionally front a captive portal.
 
-- **Web dashboard** that tracks scan, attack, and capture metrics in real time and provides quick links to all major workflows.
-- **Network scanning** endpoints that enumerate nearby access points and sniff probe requests with configurable interfaces and durations.
-- **Attack automation** for deauthentication, handshake capture, evil twin, denial of service, and KARMA-style attacks with live Socket.IO status updates.
-- **Result management** for viewing stored captures and logs produced by previous runs.
-- **Diagnostics & settings** pages to verify wireless interface state, adjust defaults such as the monitored interface or wordlist, and review application logs.
-- **Socket.IO integration** for streaming attack state, log output, and background task progress to the browser without manual refreshes.
-
-## Project Structure
-
-```
-├── run.py                # Entry point that enforces root execution and starts the Socket.IO server
-├── web/                  # Flask blueprints, templates, static assets, and shared configuration
-│   ├── app.py            # Flask application factory and blueprint registration
-│   ├── scan/             # Network scanning routes and helpers
-│   ├── attacks/          # Attack orchestration, helpers, and Socket.IO events
-│   ├── results/          # Capture/result viewing routes
-│   ├── diagnostics/      # Health checks and interface diagnostics
-│   ├── settings/         # User-configurable application defaults
-│   └── templates/        # Dashboard, scan, attack, results, diagnostics, and error views
-├── utils/
-│   └── network_utils.py  # Wireless interface helpers and packet sniffing utilities
-├── attacks/              # Lower-level attack implementations and scripts
-├── requirements.txt      # Python dependencies
-└── LICENSE
-```
+All other experimental attack stubs were removed to keep the UI, API, and code paths lean.
 
 ## Requirements
+1. Python 3.10+ and `pip`
+2. Python deps from `requirements.txt`
+   ```bash
+   python -m venv .venv
+   source .venv/bin/activate
+   pip install -r requirements.txt
+   ```
+3. Root access (AirStrike refuses to start otherwise)
+4. External CLI tooling available in `$PATH`:
+   - `aircrack-ng` suite (`airmon-ng`, `airodump-ng`, `aircrack-ng`)
+   - `iw`, `ip`, `ifconfig`/`net-tools`
+   - `hostapd`, `dnsmasq`, `iptables`, `dnsspoof`
+   - A wireless adapter that supports monitor mode and injection
 
-AirStrike targets Linux systems with wireless hardware capable of monitor mode. The application expects the following system-level prerequisites:
-
-- Python 3.9+
-- Wireless tools such as `iw`, `iwconfig`, `ifconfig`, and `iwlist`
-- Packet manipulation libraries like `scapy`
-- Root (UID 0) privileges to switch interfaces into monitor mode and run attacks
-
-All Python dependencies are listed in `requirements.txt` and can be installed with `pip`.
-
+## Running AirStrike
 ```bash
-pip install -r requirements.txt
+sudo python run.py
+# or
+sudo ./run_with_sudo.sh
 ```
 
-## Running the Application
+The server binds to `0.0.0.0:5000`; browse to `http://localhost:5000`.  
+Use the **Scan** tab to discover networks, select one, then switch to **Attack** to configure the chosen attack.  
+Live logs and capture summaries are available under **Results**.
 
-1. **Ensure root access**. AirStrike enforces root execution. Launching `run.py` as a non-root user will terminate with a warning.
-2. **Install dependencies** using the command above.
-3. **Start the web interface**:
+## Configuration Notes
+- Global defaults (interface, wordlist path, capture directory) live in `web/shared.py` under the `config` dict:
+  ```python
+  config = {
+      'interface': 'wlan0',
+      'wordlist': '/usr/share/wordlists/rockyou.txt',
+      'output_dir': './captures/'
+  }
+  ```
+- Captured handshakes are stored per-BSSID inside `captures/`.
+- The `start.sh` helper script launches the app with logging into `logs/errors.log`.
 
-   ```bash
-   sudo python run.py
-   ```
+## Repository Layout
+- `attacks/` – Python workers for deauth, handshake capture/cracking, and evil twin orchestration.
+- `web/` – Flask blueprints, Socket.IO events, templates, and front-end modules (per-attack config lives in `web/static/js/modules/attacks/`).
+- `utils/` – helpers for interface/monitor-mode management.
+- `run.py` / `run_with_sudo.sh` / `start.sh` – entry points that enforce root execution.
 
-   On startup, the script:
-
-   - Adds `127.0.0.1 airstrike.local` to `/etc/hosts` if missing.
-   - Creates the capture output directory configured in `web/shared.py`.
-   - Exposes the dashboard at `http://airstrike.local:5000`.
-
-4. **Open the dashboard** in a browser and use the sidebar to scan networks, launch attacks, review results, or adjust settings.
-
-## Configuration
-
-Global settings live in `web/shared.py`. Key defaults include:
-
-- `interface`: Wireless interface to operate on (defaults to `wlan0`).
-- `wordlist`: Path to the wordlist used for password attacks.
-- `output_dir`: Directory where capture files and attack logs are stored.
-
-These values can be customized via the Settings page in the web UI or by editing the file directly.
-
-## Development Notes
-
-- Socket.IO events are defined in `web/socket_io.py` and used by the scan and attack blueprints for realtime updates.
-- Attack helpers emit log messages through `web.shared.log_message`, ensuring output is visible both in the console and on the dashboard.
-- Utility functions in `utils/network_utils.py` manage interface mode transitions and sniff probe requests with Scapy.
+## Troubleshooting
+- Interface stuck in monitor mode? Use the **Settings → Interface** tools or `utils/network_utils.set_managed_mode`.
+- Missing binaries (e.g., `airodump-ng`, `hostapd`) will surface in the attack log pane. Install them through your package manager and restart AirStrike.
+- Ensure your wireless chipset supports the required modes; USB adapters with Atheros or Ralink chipsets are typically reliable.
 
 ## Disclaimer
+AirStrike is intended for lab use, red-team exercises, and research on networks you own or are explicitly authorized to test. Misuse may violate law or policy—operate responsibly.
 
-AirStrike is intended for authorized penetration testing and research on networks you own or have explicit permission to assess. Misuse of this software may violate local laws and regulations. Use responsibly.

@@ -1,5 +1,5 @@
 /**
- * Handshake Attack Module
+ * Cracking (Handshake) Attack Module
  */
 
 /**
@@ -18,7 +18,7 @@ export function configureHandshake(network) {
             <input type="number" id="handshake-duration" class="form-control" value="5" min="1">
         </div>
         <div class="alert alert-info">
-            <p><strong>Handshake Capture Attack:</strong> This attack will capture the WPA/WPA2 handshake and attempt to crack the password using the specified wordlist.</p>
+            <p><strong>Cracking Attack:</strong> This attack captures the WPA/WPA2 handshake and immediately attempts to crack it with the selected wordlist.</p>
             <p><strong>Target:</strong> ${network?.essid || 'Hidden Network'} (${network?.bssid || 'Unknown'})</p>
         </div>
     `;
