@@ -6,7 +6,7 @@ import { startAttackMonitoring, stopAttack } from '../attacks/index.js';
 import { socket } from '../api.js';
 import { showAlert } from '../ui.js';
 import { updateAttackStatus, updateAttackLog } from '../ui.js';
-import { setAttackRunning, updateAttackLog as updateStateLog } from '../state.js';
+import { setAttackRunning, updateAttackLog as updateStateLog, getState } from '../state.js';
 
 /**
  * Initialize results page
@@ -37,21 +37,10 @@ function setupWebSocketListeners() {
     // Listen for attack log updates
     socket.on('attack_log', (data) => {
         console.log('Received attack log update:', data);
-        // Add the new message to the log
-        const logContainer = document.getElementById('attack-log');
-        if (logContainer) {
-            let className = '';
-            if (data.message.includes('[+]')) className = 'success';
-            if (data.message.includes('[-]')) className = 'error';
-            if (data.message.includes('[!]')) className = 'warning';
-            
-            const logEntry = document.createElement('div');
-            logEntry.className = `log-entry ${className}`;
-            logEntry.textContent = data.message;
-            
-            logContainer.appendChild(logEntry);
-            logContainer.scrollTop = logContainer.scrollHeight; // Auto-scroll to bottom
-        }
+        const currentState = getState();
+        const newLog = [...(currentState.attackLog || []), data.message];
+        updateStateLog(newLog);
+        updateAttackLog(newLog);
     });
     
     // Listen for attack started event

@@ -457,6 +457,11 @@ a:hover {
   color: var(--accent-warning) !important;
 }
 
+.log-entry.password {
+  color: #ff4d4d !important;
+  font-weight: 600;
+}
+
 /* Theme switch styling */
 .theme-switch-wrapper {
   position: absolute;

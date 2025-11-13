@@ -4,25 +4,9 @@ import sys
 import os
 import time
 
-
 # Import the shared module for sudo functionality
 sys.path.append(os.path.abspath(os.path.dirname(os.path.dirname(__file__))))
 from web.shared import run_with_sudo, config, logger
-
-def is_monitor_mode(interface):
-    try:
-        result = subprocess.run(
-            ["iwconfig", interface],
-            capture_output=True,
-            text=True,
-            check=False
-        )
-        output = result.stdout.lower()
-        return "mode:monitor" in output
-    except Exception as e:
-        print(f"Error checking mode for {interface}: {e}")
-        return False
-    
 
 def set_monitor_mode(interface_name):
     """

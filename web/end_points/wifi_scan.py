@@ -28,7 +28,5 @@ class WifiScan(Resource):
                     example: "6"
         """
         interface = 'wlan0'
-        networks, error = run_scan(interface)
-        if error:
-            return jsonify({'success': False, 'error': error}), 500
-        return jsonify(networks)
+        result = run_scan(interface)
+        return jsonify(result)

@@ -91,7 +91,7 @@ def scan_wifi_networks(interface='wlan0'):
                 logger.warning(f"Could not disable NetworkManager: {nm_err}")
         
         # Run the scan
-        networks, scan_error = run_scan(interface)
+        networks = run_scan(interface)
         
         # Re-enable NetworkManager if we disabled it
         try:
@@ -99,10 +99,6 @@ def scan_wifi_networks(interface='wlan0'):
         except Exception:
             pass  # Ignore errors here
         
-        if scan_error:
-            logger.error(f"Error scanning WiFi networks: {scan_error}")
-            return [], scan_error
-
         # Update stats
         if networks:
             stats['networks_count'] = len(networks)

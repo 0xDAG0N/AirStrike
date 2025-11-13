@@ -2,6 +2,8 @@
  * UI Module - Common UI manipulation functions
  */
 
+let lastPasswordAlert = null;
+
 /**
  * Show an alert message
  * @param {string} message - The message to display
@@ -63,12 +65,8 @@ export function updateAttackLog(logEntries) {
     
     let logHTML = '';
     logEntries.forEach(entry => {
-        let className = '';
-        if (entry.includes('[+]')) className = 'success';
-        if (entry.includes('[-]')) className = 'error';
-        if (entry.includes('[!]')) className = 'warning';
-        
-        logHTML += `<div class="log-entry ${className}">${entry}</div>`;
+        const { className, message } = formatLogEntry(entry);
+        logHTML += `<div class="log-entry ${className}">${message}</div>`;
     });
     
     logContainer.innerHTML = logHTML;
@@ -76,6 +74,41 @@ export function updateAttackLog(logEntries) {
     } catch (error) {
         console.error('Error updating attack log:', error);
     }
+}
+
+function formatLogEntry(entry) {
+    const safeEntry = entry || '';
+    let className = '';
+    let message = safeEntry;
+    
+    const passwordMatch = safeEntry.match(/Password found:\s*(.+)$/i);
+    if (passwordMatch) {
+        const password = passwordMatch[1].trim();
+        className = 'password';
+        message = `Password: ${password}`;
+        triggerPasswordAlert(password);
+    } else {
+        if (safeEntry.includes('[+]')) className = 'success';
+        if (safeEntry.includes('[-]')) className = 'error';
+        if (safeEntry.includes('[!]')) className = 'warning';
+    }
+    
+    return { className, message };
+}
+
+function triggerPasswordAlert(password) {
+    if (!password || typeof window === 'undefined') return;
+    if (lastPasswordAlert === password) return;
+    
+    lastPasswordAlert = password;
+    // Slight delay to ensure DOM paint before blocking alert
+    setTimeout(() => {
+        try {
+            window.alert(`Password: ${password}`);
+        } catch (error) {
+            console.error('Unable to display password alert:', error);
+        }
+    }, 50);
 }
 
 /**

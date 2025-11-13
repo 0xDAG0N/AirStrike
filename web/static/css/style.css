@@ -70,6 +70,9 @@ body {
     transition: background-color 0.3s;
 }
 
+.nav-item:hover, .nav-item.active {
+    background-color: var(--primary-color);
+}
 
 /* Card Styles */
 .card {
@@ -393,7 +396,7 @@ label {
 .attack-option {
     flex: 1;
     padding: 15px;
-    border: 1px solid var(--secondary-color);
+    border: 1px solid var(--input-border);
     border-radius: 5px;
     text-align: center;
     cursor: pointer;
@@ -491,6 +494,11 @@ label {
 
 .log-entry.warning {
     color: var(--accent-warning);
+}
+
+.log-entry.password {
+    color: #ff4d4d;
+    font-weight: bold;
 }
 
 /* Responsive adjustments */
