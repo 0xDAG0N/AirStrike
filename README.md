@@ -34,11 +34,10 @@ All other experimental attack stubs were removed to keep the UI, API, and code p
 ## Running AirStrike
 ```bash
 sudo python run.py
-# or
-sudo ./run_with_sudo.sh
 ```
 
-The server binds to `0.0.0.0:5000`; browse to `http://localhost:5000`.  
+The runner enforces sudo, exports the required environment variables, and ensures `/etc/hosts` contains `127.0.0.1 airstrike.local`.  
+The server binds to `0.0.0.0:5000`; browse to `http://airstrike.local:5000`.  
 Use the **Scan** tab to discover networks, select one, then switch to **Attack** to configure the chosen attack.  
 Live logs and capture summaries are available under **Results**.
 
@@ -52,13 +51,13 @@ Live logs and capture summaries are available under **Results**.
   }
   ```
 - Captured handshakes are stored per-BSSID inside `captures/`.
-- The `start.sh` helper script launches the app with logging into `logs/errors.log`.
+- `run.py` is the single entry point; it handles root enforcement, host mapping for `airstrike.local`, and Socket.IO startup logs.
 
 ## Repository Layout
 - `attacks/` – Python workers for deauth, handshake capture/cracking, and evil twin orchestration.
 - `web/` – Flask blueprints, Socket.IO events, templates, and front-end modules (per-attack config lives in `web/static/js/modules/attacks/`).
 - `utils/` – helpers for interface/monitor-mode management.
-- `run.py` / `run_with_sudo.sh` / `start.sh` – entry points that enforce root execution.
+- `run.py` – entry point that enforces root execution and prepares the environment.
 
 ## Troubleshooting
 - Interface stuck in monitor mode? Use the **Settings → Interface** tools or `utils/network_utils.set_managed_mode`.
@@ -67,4 +66,3 @@ Live logs and capture summaries are available under **Results**.
 
 ## Disclaimer
 AirStrike is intended for lab use, red-team exercises, and research on networks you own or are explicitly authorized to test. Misuse may violate law or policy—operate responsibly.
-

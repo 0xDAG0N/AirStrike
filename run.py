@@ -31,6 +31,21 @@ from web.app import app
 from web.socket_io import socketio
 
 if __name__ == '__main__':
+    # Ensure airstrike.local resolves locally by updating /etc/hosts if necessary
+    host_entry = "127.0.0.1 airstrike.local"
+    hosts_file = "/etc/hosts"
+    try:
+        with open(hosts_file, 'r', encoding='utf-8', errors='ignore') as hosts_handle:
+            content = hosts_handle.read()
+        if host_entry not in content:
+            print(f"Adding '{host_entry}' to {hosts_file}")
+            with open(hosts_file, 'a', encoding='utf-8') as hosts_handle:
+                hosts_handle.write(f"\n{host_entry}\n")
+    except OSError as exc:
+        print(f"Error modifying {hosts_file}: {exc}")
+        print("Please add the following line manually if the domain does not resolve:")
+        print(f"    {host_entry}")
+
     # Create output directory if it doesn't exist
     from web.shared import config
     os.makedirs(config['output_dir'], exist_ok=True)
@@ -41,9 +56,9 @@ if __name__ == '__main__':
     
     # Print a clickable link with different formats for better compatibility
     print("\nAccess the web interface at:")
-    print("\033[1;34mhttp://localhost:5000\033[0m")  # Bold blue
-    print("\033]8;;http://localhost:5000\033\\Click here to open in browser\033]8;;\033\\")  # Hyperlink
+    print("\033[1;34mhttp://airstrike.local:5000\033[0m")  # Bold blue
+    print("\033]8;;http://airstrike.local:5000\033\\Click here to open in browser\033]8;;\033\\")  # Hyperlink
     print("=" * 60 + "\n")
     
     # Run the Flask app with SocketIO (in production mode to avoid debugger spam)
-    socketio.run(app, debug=False, host='0.0.0.0', port=5000) 
+    socketio.run(app, debug=False, host='0.0.0.0', port=5000)
