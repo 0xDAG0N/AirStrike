@@ -173,3 +173,5 @@ cython_debug/
 .ruff_cache/
 
 .pypirc
+# macOS
+.DS_Store
