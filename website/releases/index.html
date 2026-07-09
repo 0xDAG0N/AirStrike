@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang=en-us>
+
+<head itemscope itemtype="http://schema.org/WebPage">
+    <meta charset=utf-8>
+    <meta name=viewport content="width=device-width">
+    <title itemprop=name>Release Notes | Airstrike</title>
+    <meta itemprop=name content="Release Notes | Airstrike">
+    <meta name=application-name content="Release Notes | Airstrike">
+    <meta name=twitter:title content="Release Notes | Airstrike">
+    <meta property="og:site_name" content="Airstrike">
+    <meta property="og:title" content="Release Notes | Airstrike">
+    <meta itemprop=description
+        content="Track official Airstrike drops. AIRSTRIKE v0.0, the first working build, is available directly from GitHub along with source archives.">
+    <meta name=description
+        content="Track official Airstrike drops. AIRSTRIKE v0.0, the first working build, is available directly from GitHub along with source archives.">
+    <meta name=twitter:description
+        content="Track official Airstrike drops. AIRSTRIKE v0.0, the first working build, is available directly from GitHub along with source archives.">
+    <meta property="og:description"
+        content="Track official Airstrike drops. AIRSTRIKE v0.0, the first working build, is available directly from GitHub along with source archives.">
+    <meta name=keywords content="airstrike,airstrike release history,airstrike v0.0">
+    <meta name=apple-mobile-web-app-status-bar-style content="black-translucent">
+    <meta name=msapplication-navbutton-color content="#367BF0">
+    <meta name=theme-color content="#367BF0">
+    <meta name=language content="English">
+    <meta property="og:locale" content="en_US">
+    <meta itemprop=image content="/images/airstrike-jet-dragon-icon.svg">
+    <meta property="og:image" content="/images/airstrike-jet-dragon-icon.svg">
+    <meta name=twitter:image content="/images/airstrike-jet-dragon-icon.svg">
+    <meta name=twitter:image:src content="/images/airstrike-jet-dragon-icon.svg">
+    <meta property="og:updated_time" content=2025-11-13T18:05:41Z>
+    <meta name=twitter:site content="@mahmoud-sadder">
+    <meta name=twitter:creator content="@mahmoud-sadder">
+    <link rel="icon" type="image/x-icon" href="/images/airstrike-jet-logo-black-transperant.png">
+    <link rel=sitemap type=application/xml title=Sitemap href=/sitemap.xml>
+    <link rel=canonical href=/releases/ itemprop=url>
+    <meta name=twitter:url content="/releases/">
+    <meta property="og:url" content="/releases/">
+    <meta name=url content="/releases/">
+    <link href="/style.min.css?ver=899b114f4c20a4c758879ed0c8706282" rel=stylesheet>
+    <style>
+        #content.release-page {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 40px 16px 80px;
+            line-height: 1.65
+        }
+
+        .release-hero {
+            background: linear-gradient(135deg, #04050b, #151e2f);
+            color: #fff;
+            padding: 48px;
+            border-radius: 32px 32px 12px 12px;
+            box-shadow: 0 25px 40px rgba(0, 0, 0, .35);
+            position: relative;
+            overflow: hidden
+        }
+
+        .release-hero::after {
+            content: "";
+            position: absolute;
+            inset: 12px;
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, .15);
+            pointer-events: none
+        }
+
+        .release-hero__eyebrow {
+            text-transform: uppercase;
+            letter-spacing: .3em;
+            font-size: .75rem;
+            margin-bottom: 16px;
+            opacity: .75
+        }
+
+        .release-hero h1 {
+            margin: 0;
+            font-size: clamp(2.4rem, 4vw, 3.4rem)
+        }
+
+        .release-hero__lede {
+            font-size: 1.15rem;
+            margin-top: 12px;
+            margin-bottom: 28px;
+            color: rgba(255, 255, 255, .85)
+        }
+
+        .release-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin: 0;
+            padding: 0;
+            list-style: none
+        }
+
+        .release-meta div {
+            min-width: 160px
+        }
+
+        .release-meta dt {
+            font-size: .85rem;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .65);
+            margin: 0 0 6px
+        }
+
+        .release-meta dd {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 600
+        }
+
+        .release-actions {
+            margin-top: 32px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px
+        }
+
+        .release-actions .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 13px 26px;
+            border-radius: 999px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: transform .2s, box-shadow .2s
+        }
+
+        .release-actions .btn.primary {
+            background: #36f03c;
+            color: #071020;
+            box-shadow: 0 10px 30px rgba(54, 240, 60, .35)
+        }
+
+        .release-actions .btn.secondary {
+            border: 1px solid rgba(255, 255, 255, .35);
+            color: #fff
+        }
+
+        .release-actions .btn:focus-visible,
+        .release-actions .btn:hover {
+            transform: translateY(-2px)
+        }
+
+        .release-notes,
+        .release-archive,
+        .release-follow {
+            margin-top: 48px;
+            padding: 32px;
+            border-radius: 24px;
+            background: #fff;
+            box-shadow: 0 15px 30px rgba(6, 9, 16, .08)
+        }
+
+        .release-notes h2,
+        .release-archive h2,
+        .release-follow h2 {
+            margin-top: 0
+        }
+
+        .release-highlights {
+            padding-left: 20px;
+            margin: 20px 0
+        }
+
+        .release-highlights li+li {
+            margin-top: 6px
+        }
+
+        .release-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 28px
+        }
+
+        .release-summary-grid div {
+            padding: 16px;
+            border-radius: 18px;
+            background: #f5f7fb;
+            border: 1px solid #e2e6f5
+        }
+
+        .release-summary-grid span {
+            display: block;
+            font-size: .8rem;
+            text-transform: uppercase;
+            letter-spacing: .2em;
+            margin-bottom: 6px;
+            color: #5b6074
+        }
+
+        .release-summary-grid strong {
+            font-size: 1.2rem;
+            color: #111528
+        }
+
+        .release-entry {
+            display: flex;
+            gap: 20px;
+            padding: 20px 0;
+            border-bottom: 1px solid #e6e8f2
+        }
+
+        .release-entry:last-child {
+            border-bottom: none
+        }
+
+        .release-entry time {
+            font-weight: 600;
+            color: #0a1533;
+            min-width: 140px
+        }
+
+        .release-entry a {
+            font-weight: 600
+        }
+
+        .release-archive__cta {
+            margin-top: 20px;
+            font-size: .95rem;
+            color: #43485b
+        }
+
+        .release-follow ol {
+            counter-reset: step;
+            margin: 24px 0;
+            padding-left: 22px
+        }
+
+        .release-follow li+li {
+            margin-top: 10px
+        }
+
+        .release-follow__links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 16px
+        }
+
+        .release-follow__links a {
+            padding: 10px 20px;
+            border-radius: 999px;
+            border: 1px solid #d1d7f4;
+            font-weight: 600;
+            text-decoration: none;
+            color: #0c1a3b
+        }
+
+        @media (max-width:720px) {
+            .release-hero {
+                padding: 32px
+            }
+
+            .release-entry {
+                flex-direction: column
+            }
+
+            .release-entry time {
+                min-width: unset
+            }
+
+            .release-meta div {
+                min-width: 120px
+            }
+        }
+    </style>
+    <script>
+        const $ = document.querySelector.bind(document), $$ = document.querySelectorAll.bind(document)
+    </script>
+</head>
+
+<body>
+    <div data-template="site-header"></div>
+    <section id=content class="release-page">
+        <header class=release-hero>
+            <p class=release-hero__eyebrow>latest release</p>
+            <h1>AIRSTRIKE v0.0</h1>
+            <p class=release-hero__lede>first working version (almost)</p>
+            <dl class=release-meta>
+                <div>
+                    <dt>Published</dt>
+                    <dd>13 November 2025</dd>
+                </div>
+                <div>
+                    <dt>Tag</dt>
+                    <dd>v0.0</dd>
+                </div>
+                <div>
+                    <dt>Stream</dt>
+                    <dd>Preview build</dd>
+                </div>
+            </dl>
+            <div class=release-actions>
+                <a class="btn primary" href="https://github.com/mahmoud-sadder/airstrike/releases/tag/v0.0"
+                    target=_blank rel=noopener>View release on GitHub</a>
+                <a class="btn secondary"
+                    href="https://github.com/mahmoud-sadder/airstrike/archive/refs/tags/v0.0.zip">Download source
+                    (.zip)</a>
+                <a class="btn secondary"
+                    href="https://github.com/mahmoud-sadder/airstrike/archive/refs/tags/v0.0.tar.gz">Download source
+                    (.tar.gz)</a>
+            </div>
+        </header>
+
+        <article class=release-notes>
+            <h2>Release overview</h2>
+            <p>Airstrike v0.0 is the very first working build of the platform. It marks the point where the tooling,
+                packaging, and documentation all line up so everyone can pull the code, inspect it, and begin
+                experimenting.</p>
+            <ul class=release-highlights>
+                <li>First tagged drop of the Airstrike codebase.</li>
+                <li>Source archives generated directly from the signed Git tag so the code you read is the code we
+                    built.</li>
+                <li>Baseline for testers and contributors to file issues and help prioritize the roadmap.</li>
+            </ul>
+            <p>Expect rough edges&mdash;this is a pre-release snapshot intended to spark feedback. File issues, send
+                patches, and tell us what you want stabilized first.</p>
+            <div class=release-summary-grid>
+                <div>
+                    <span>Repository</span>
+                    <strong>github.com/mahmoud-sadder/airstrike</strong>
+                </div>
+                <div>
+                    <span>Target branch</span>
+                    <strong>main</strong>
+                </div>
+                <div>
+                    <span>Release note</span>
+                    <strong>&ldquo;first working version (almost)&rdquo;</strong>
+                </div>
+            </div>
+        </article>
+
+        <section class=release-archive>
+            <h2>Release log</h2>
+            <div class=release-entry>
+                <time datetime=2025-11-13>13 Nov 2025</time>
+                <div>
+                    <h3>AIRSTRIKE v0.0</h3>
+                    <p>The first tagged Airstrike build. This snapshot bundles the project in its current state so the
+                        community can evaluate it publicly.</p>
+                    <a href="https://github.com/mahmoud-sadder/airstrike/releases/tag/v0.0" target=_blank
+                        rel=noopener>Read the GitHub release</a>
+                </div>
+            </div>
+            <p class=release-archive__cta>Future drops will land here as we cut new tags. Watch the GitHub repository or
+                subscribe to the release feed to know the moment they ship.</p>
+        </section>
+
+        <section class=release-follow>
+            <h2>Stay updated</h2>
+            <p>The easiest way to hear about new Airstrike builds is to follow the repository directly. GitHub handles
+                the notifications, and you only get pinged when a new tag ships.</p>
+            <ol>
+                <li>Open the <a href="https://github.com/mahmoud-sadder/airstrike" target=_blank rel=noopener>Airstrike
+                        repository</a>.</li>
+                <li>Use the <strong>Watch</strong> menu &rarr; <em>Custom</em> &rarr; enable <strong>Releases</strong>
+                    only.</li>
+                <li>Optionally pull <a href="https://github.com/mahmoud-sadder/airstrike/releases.atom" target=_blank
+                        rel=noopener>the Atom feed</a> into your reader for archival tracking.</li>
+            </ol>
+            <div class=release-follow__links>
+                <a href="https://github.com/mahmoud-sadder/airstrike/releases.atom" target=_blank rel=noopener>Subscribe
+                    to releases.atom</a>
+                <a href="https://github.com/mahmoud-sadder/airstrike/releases" target=_blank rel=noopener>Browse all
+                    releases</a>
+            </div>
+        </section>
+    </section>
+    <div data-template="site-footer"></div>
+    <script src="/script.min.js?ver=3dafc40a0d8cbf1d4de2fe8a08595670"></script>
+    <script>
+            (function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'999d86c55bc1fc45',t:'MTc2MjM1ODAzMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();
+    </script>
+</body>
+
+</html>

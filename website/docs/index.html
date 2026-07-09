@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang=en-us>
+
+<head itemscope itemtype="http://schema.org/WebPage">
+    <meta charset=utf-8>
+    <meta name=viewport content="width=device-width">
+    <title itemprop=name>Documentation | Airstrike</title>
+    <meta itemprop=name content="Documentation | Airstrike">
+    <meta name=application-name content="Documentation | Airstrike">
+    <meta name=twitter:title content="Documentation | Airstrike">
+    <meta property="og:site_name" content="Airstrike">
+    <meta property="og:title" content="Documentation | Airstrike">
+    <meta itemprop=description
+        content="Official documentation for the Airstrike Flask + Socket.IO Wi-Fi attack orchestrator. Learn requirements, configuration, runtime flows, and troubleshooting steps.">
+    <meta name=description
+        content="Official documentation for the Airstrike Flask + Socket.IO Wi-Fi attack orchestrator. Learn requirements, configuration, runtime flows, and troubleshooting steps.">
+    <meta name=twitter:description
+        content="Official documentation for the Airstrike Flask + Socket.IO Wi-Fi attack orchestrator. Learn requirements, configuration, runtime flows, and troubleshooting steps.">
+    <meta property="og:description"
+        content="Official documentation for the Airstrike Flask + Socket.IO Wi-Fi attack orchestrator. Learn requirements, configuration, runtime flows, and troubleshooting steps.">
+    <meta name=keywords content="airstrike,docs,documentation,guide,penetration,testing">
+    <meta name=apple-mobile-web-app-status-bar-style content="black-translucent">
+    <meta name=msapplication-navbutton-color content="#367BF0">
+    <meta name=theme-color content="#367BF0">
+    <meta name=language content="English">
+    <meta property="og:locale" content="en_US">
+    <meta itemprop=image content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta property="og:image" content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta name=twitter:image content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta name=twitter:image:src content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta property="og:updated_time" content=2025-01-01T00:00:00+0000>
+    <meta name=twitter:site content="@airstrike">
+    <meta name=twitter:creator content="@airstrike">
+    <link rel="icon" type="image/x-icon" href="/images/airstrike-jet-logo-black-transperant.png">
+    <link rel=sitemap type=application/xml title=Sitemap href=/sitemap.xml>
+    <link rel=canonical href=/docs/ itemprop=url>
+    <meta name=twitter:url content="/docs/">
+    <meta property="og:url" content="/docs/">
+    <meta name=url content="/docs/">
+    <link href="/style.min.css?ver=899b114f4c20a4c758879ed0c8706282" rel=stylesheet>
+    <script>
+        const $ = document.querySelector.bind(document), $$ = document.querySelectorAll.bind(document)
+    </script>
+</head>
+
+<body>
+    <div data-template="site-header"></div>
+    <section id=content>
+        <h1 id=airstrike-documentation>Airstrike Documentation</h1>
+        <p>This page explains how to prepare your workstation, run the Flask + Socket.IO server, configure defaults, and
+            troubleshoot the official Airstrike Wi-Fi attack orchestrator.</p>
+        <h2 id=requirements>Requirements</h2>
+        <ul>
+            <li>Python 3.10+ with <code>pip</code> available.</li>
+            <li>Project dependencies from <code>requirements.txt</code> (install inside a virtualenv).</li>
+            <li>Root access (<code>run.py</code> exits if not launched with sudo).</li>
+            <li>A wireless adapter that supports monitor mode and injection.</li>
+            <li>External CLI tooling present in <code>$PATH</code>:
+                <ul>
+                    <li><code>airmon-ng</code>, <code>airodump-ng</code>, <code>aircrack-ng</code></li>
+                    <li><code>iw</code>, <code>ip</code>, <code>ifconfig</code> (net-tools)</li>
+                    <li><code>hostapd</code>, <code>dnsmasq</code>, <code>iptables</code>, <code>dnsspoof</code></li>
+                </ul>
+            </li>
+        </ul>
+        <h3 id=quick-setup>Quick Setup</h3>
+        <pre><code>python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+sudo python run.py
+</code></pre>
+        <p>The runner exports required environment variables, enforces sudo, ensures <code>/etc/hosts</code> contains
+            <code>127.0.0.1 airstrike.local</code>, and binds to <code>0.0.0.0:5000</code>. Browse to
+            <code>http://airstrike.local:5000</code>.</p>
+        <h2 id=using-the-interface>Using the Interface</h2>
+        <ol>
+            <li><strong>Scan</strong> tab &mdash; discover networks, view adapter state, and enable monitor mode.</li>
+            <li><strong>Attack</strong> tab &mdash; configure Deauth, Handshake Capture + Cracking, or Evil Twin
+                parameters.</li>
+            <li><strong>Results</strong> &mdash; live logs, capture summaries, and handshake verification per BSSID.
+            </li>
+        </ol>
+        <p>Each attack is managed by a worker inside <code>attacks/</code> and communicates through Socket.IO so you
+            always have real-time status feedback.</p>
+        <h2 id=configuration>Configuration</h2>
+        <p>Global defaults live in <code>web/shared.py</code>:</p>
+        <pre><code>config = {
+    'interface': 'wlan0',
+    'wordlist': '/usr/share/wordlists/rockyou.txt',
+    'output_dir': './captures/'
+}</code></pre>
+        <p>Modify these values to match your adapter names, favorite wordlists, or external storage paths. Captured
+            handshakes are stored per BSSID under <code>captures/</code>.</p>
+        <h2 id=repository-layout>Repository Layout</h2>
+        <ul>
+            <li><code>attacks/</code> &mdash; Python workers for Deauth, Handshake capture/cracking, and Evil Twin
+                orchestration.</li>
+            <li><code>web/</code> &mdash; Flask blueprints, Socket.IO events, templates, and front-end modules under
+                <code>web/static/js/modules/attacks/</code>.</li>
+            <li><code>utils/</code> &mdash; helpers for interface and monitor-mode management.</li>
+            <li><code>run.py</code> &mdash; single entry point that enforces root execution, handles host mapping, and
+                boots Socket.IO logging.</li>
+        </ul>
+        <h2 id=troubleshooting>Troubleshooting</h2>
+        <ul>
+            <li><strong>Interface stuck in monitor mode?</strong> Use Settings → Interface tools or call
+                <code>utils/network_utils.set_managed_mode()</code>.</li>
+            <li><strong>Missing binaries?</strong> The attack log pane surfaces missing commands (e.g.,
+                <code>hostapd</code>). Install them via your package manager and restart.</li>
+            <li><strong>No packets?</strong> Ensure your adapter supports monitor mode + injection; Atheros/Ralink USB
+                NICs are dependable.</li>
+        </ul>
+        <h2 id=disclaimer>Disclaimer</h2>
+        <p>Airstrike is intended for lab use, red-team exercises, and research on networks you own or have written
+            authorization to test. Misuse may violate laws or policy&mdash;operate responsibly.</p>
+        <h2 id=support>Support</h2>
+        <p>Review the <a href=/faq />FAQ</a>, open an issue on <a
+                href="https://github.com/mahmoud-sadder/airstrike/issues">GitHub</a>, or reach out through the channels
+            listed on the <a href=/contact />contact page</a>.</p>
+    </section>
+    <div data-template="site-footer"></div>
+    <script src="/script.min.js?ver=3dafc40a0d8cbf1d4de2fe8a08595670"></script>
+    <script>
+            (function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'999d86496af1499e',t:'MTc2MjM1ODAxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();
+    </script>
+</body>
+
+</html>

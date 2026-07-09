@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang=en-us>
+
+<head itemscope itemtype="http://schema.org/WebPage">
+    <meta charset=utf-8>
+    <meta name=viewport content="width=device-width">
+    <title itemprop=name>Attack Techniques | Airstrike</title>
+    <meta itemprop=name content="Attack Techniques | Airstrike">
+    <meta name=application-name content="Attack Techniques | Airstrike">
+    <meta name=twitter:title content="Attack Techniques | Airstrike">
+    <meta property="og:site_name" content="Airstrike">
+    <meta property="og:title" content="Attack Techniques | Airstrike">
+    <meta itemprop=description
+        content="Detailed reference for the three supported Airstrike Wi-Fi attack modules: Deauthentication, Handshake Capture + Cracking, and Evil Twin.">
+    <meta name=description
+        content="Detailed reference for the three supported Airstrike Wi-Fi attack modules: Deauthentication, Handshake Capture + Cracking, and Evil Twin.">
+    <meta name=twitter:description
+        content="Detailed reference for the three supported Airstrike Wi-Fi attack modules: Deauthentication, Handshake Capture + Cracking, and Evil Twin.">
+    <meta property="og:description"
+        content="Detailed reference for the three supported Airstrike Wi-Fi attack modules: Deauthentication, Handshake Capture + Cracking, and Evil Twin.">
+    <meta name=keywords content="airstrike,deauth,handshake,evil twin,attacks">
+    <meta name=apple-mobile-web-app-status-bar-style content="black-translucent">
+    <meta name=msapplication-navbutton-color content="#367BF0">
+    <meta name=theme-color content="#367BF0">
+    <meta name=language content="English">
+    <meta property="og:locale" content="en_US">
+    <meta itemprop=image content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta property="og:image" content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta name=twitter:image content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta name=twitter:image:src content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta property="og:updated_time" content=2025-01-01T00:00:00+0000>
+    <meta name=twitter:site content="@airstrike">
+    <meta name=twitter:creator content="@airstrike">
+    <link rel="icon" type="image/x-icon" href="/images/airstrike-jet-logo-black-transperant.png">
+    <link rel=sitemap type=application/xml title=Sitemap href=/sitemap.xml>
+    <link rel=canonical href=/attacks/ itemprop=url>
+    <meta name=twitter:url content="/attacks/">
+    <meta property="og:url" content="/attacks/">
+    <meta name=url content="/attacks/">
+    <link href="/style.min.css?ver=899b114f4c20a4c758879ed0c8706282" rel=stylesheet>
+    <script>
+        const $ = document.querySelector.bind(document), $$ = document.querySelectorAll.bind(document)
+    </script>
+</head>
+
+<body>
+    <div data-template="site-header"></div>
+    <section id=content>
+        <h1 id=airstrike-attack-modules>Airstrike Attack Modules</h1>
+        <p>Airstrike intentionally focuses on the three Wi-Fi attacks that proved stable across labs and field
+            engagements. Each module has its own Python worker inside <code>attacks/</code> and exposes status, logs,
+            and captures through Socket.IO.</p>
+        <h2 id=deauthentication>Deauthentication</h2>
+        <p>Use this module to eject clients from an AP by flooding crafted 802.11 deauth frames.</p>
+        <ul>
+            <li><strong>Ideal for</strong> forcing handshakes, testing IDS/WIPS response, or simulating nuisance
+                scenarios.</li>
+            <li><strong>Inputs</strong>: interface, BSSID/SSID, channel, packet rate.</li>
+            <li><strong>Backend tooling</strong>: <code>airmon-ng</code> (monitor mode), <code>aireplay-ng</code>, plus
+                iw/ifconfig for cleanup.</li>
+        </ul>
+        <h2 id=handshake-cracking>Handshake Capture + Cracking</h2>
+        <p>Captures WPA/WPA2 handshakes and immediately launches aircrack-ng with the configured wordlist.</p>
+        <ul>
+            <li><strong>Workflow</strong>: enable monitor mode → start <code>airodump-ng</code> → optionally trigger a
+                deauth burst → feed captured handshake into <code>aircrack-ng</code>.</li>
+            <li><strong>Configuration</strong>: target BSSID, channel, capture duration, wordlist path
+                (<code>config['wordlist']</code> by default).</li>
+            <li><strong>Output</strong>: PCAP + cracked credentials stored per BSSID under <code>captures/</code>.</li>
+        </ul>
+        <h2 id=evil-twin>Evil Twin</h2>
+        <p>Clones a target SSID using hostapd/dnsmasq, stands up DHCP/DNS spoofing, and can optionally display your
+            captive portal.</p>
+        <ul>
+            <li><strong>Components</strong>: hostapd for beaconing, dnsmasq for DHCP/DNS, <code>iptables</code> for NAT,
+                optional <code>dnsspoof</code> or custom portal.</li>
+            <li><strong>Use cases</strong>: credential phishing, rogue AP detection drills, captive portal testing.</li>
+            <li><strong>Cleanup</strong>: the worker returns the adapter to managed mode and restores original IP
+                configuration.</li>
+        </ul>
+        <h2 id=workflow>Workflow Tips</h2>
+        <ol>
+            <li>Scan for targets, confirming signal strength and channel stability.</li>
+            <li>Run the desired attack while watching the Results tab for live logs.</li>
+            <li>Download artifacts (PCAPs, cracked keys) from <code>captures/&lt;BSSID&gt;</code>.</li>
+        </ol>
+        <p>Have ideas to enhance these modules? Open an issue or pull request on <a
+                href="https://github.com/mahmoud-sadder/airstrike/issues">GitHub</a> with logs, adapter info, and
+            reproduction notes.</p>
+    </section>
+    <div data-template="site-footer"></div>
+    <script src="/script.min.js?ver=3dafc40a0d8cbf1d4de2fe8a08595670"></script>
+    <script>
+            (function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'999d86496af1499e',t:'MTc2MjM1ODAxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();
+    </script>
+</body>
+
+</html>

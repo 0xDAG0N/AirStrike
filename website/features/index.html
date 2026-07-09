@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang=en-us>
+
+<head itemscope itemtype="http://schema.org/WebPage">
+    <meta charset=utf-8>
+    <meta name=viewport content="width=device-width">
+    <title itemprop=name>Airstrike Features | Wi-Fi Attack Orchestrator</title>
+    <meta itemprop=name content="Airstrike Features | Wi-Fi Attack Orchestrator">
+    <meta name=application-name content="Airstrike Features | Wi-Fi Attack Orchestrator">
+    <meta name=twitter:title content="Airstrike Features | Wi-Fi Attack Orchestrator">
+    <meta property="og:site_name" content="Airstrike">
+    <meta property="og:title" content="Airstrike Features | Wi-Fi Attack Orchestrator">
+    <meta itemprop=description
+        content="Learn how the Airstrike Flask + Socket.IO interface orchestrates Wi-Fi assessments such as deauth, handshake cracking, and Evil Twin from your browser.">
+    <meta name=description
+        content="Learn how the Airstrike Flask + Socket.IO interface orchestrates Wi-Fi assessments such as deauth, handshake cracking, and Evil Twin from your browser.">
+    <meta name=twitter:description
+        content="Learn how the Airstrike Flask + Socket.IO interface orchestrates Wi-Fi assessments such as deauth, handshake cracking, and Evil Twin from your browser.">
+    <meta property="og:description"
+        content="Learn how the Airstrike Flask + Socket.IO interface orchestrates Wi-Fi assessments such as deauth, handshake cracking, and Evil Twin from your browser.">
+    <meta name=keywords content="airstrike,wifi,deauth,evil twin,handshake,flask,socket.io">
+    <meta name=apple-mobile-web-app-status-bar-style content="black-translucent">
+    <meta name=msapplication-navbutton-color content="#367BF0">
+    <meta name=theme-color content="#367BF0">
+    <meta name=language content="English">
+    <meta property="og:locale" content="en_US">
+    <meta itemprop=image content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta property="og:image" content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta name=twitter:image content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta name=twitter:image:src content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta property="og:updated_time" content=2025-01-01T00:00:00+0000>
+    <meta name=twitter:site content="@airstrike">
+    <meta name=twitter:creator content="@airstrike">
+    <link rel="icon" type="image/x-icon" href="/images/airstrike-jet-logo-black-transperant.png">
+    <link rel=sitemap type=application/xml title=Sitemap href=/sitemap.xml>
+    <link rel=canonical href=/features/ itemprop=url>
+    <meta name=twitter:url content="/features/">
+    <meta property="og:url" content="/features/">
+    <meta name=url content="/features/">
+    <link href="/style.min.css?ver=899b114f4c20a4c758879ed0c8706282" rel=stylesheet>
+    <script>
+        const $ = document.querySelector.bind(document), $$ = document.querySelectorAll.bind(document)
+    </script>
+</head>
+
+<body>
+    <div data-template="site-header"></div>
+    <section id=content>
+        <h1 id=airstrike-features>Airstrike Features</h1>
+        <h2 id=platform-overview>Platform Overview</h2>
+        <p>Airstrike is a Flask + Socket.IO web interface that orchestrates Wi-Fi assessment tooling directly from your
+            browser. It keeps the UI simple, the API stable, and the code paths lean so you can focus on running proven
+            wireless attacks without juggling dozens of terminals.</p>
+        <h2 id=focused-attack-surface>Focused Attack Surface</h2>
+        <p>This build intentionally spotlights the three most stable operations in the suite:</p>
+        <ul>
+            <li><strong>Deauthentication</strong> &mdash; automatically floods crafted 802.11 deauth frames to boot
+                clients off a chosen AP.</li>
+            <li><strong>Handshake Capture + Cracking</strong> &mdash; captures WPA/WPA2 handshakes and launches
+                aircrack-ng with the wordlist defined in <code>web/shared.py</code>.</li>
+            <li><strong>Evil Twin</strong> &mdash; clones the SSID with hostapd/dnsmasq, stands up DHCP/DNS spoofing,
+                and can front a captive portal.</li>
+        </ul>
+        <p>Everything else&mdash;experimental stubs, half-finished modules&mdash;was intentionally removed to keep
+            operators on a predictable, regression-tested workflow.</p>
+        <h2 id=browser-driven-workflow>Browser-driven Workflow</h2>
+        <p>After launching <code>sudo python run.py</code>, browse to <code>http://airstrike.local:5000</code>:</p>
+        <ol>
+            <li><strong>Scan</strong> tab discovers nearby networks and shows adapter state.</li>
+            <li><strong>Attack</strong> tab exposes configuration panels for the active scenario.</li>
+            <li><strong>Results</strong> streams real-time Socket.IO logs and stores captures under
+                <code>captures/&lt;BSSID&gt;</code>.</li>
+        </ol>
+        <h2 id=ops-ready-defaults>Ops-ready Defaults</h2>
+        <ul>
+            <li>Global config lives in <code>web/shared.py</code> (interface, wordlist, capture directory).</li>
+            <li><code>run.py</code> enforces sudo/root, ensures <code>/etc/hosts</code> contains
+                <code>airstrike.local</code>, and starts the Socket.IO server.</li>
+            <li>Missing binaries (aircrack-ng, hostapd, dnsmasq, iw, etc.) surface immediately in the UI log pane so you
+                can install them and retry.</li>
+            <li>Adapters must support monitor mode and injection—USB NICs with Atheros/Ralink chipsets are field-tested
+                favorites.</li>
+        </ul>
+        <h2 id=repository-layout>Repository Layout</h2>
+        <ul>
+            <li><code>attacks/</code> &mdash; worker modules for deauth, handshake capture/cracking, and Evil Twin
+                orchestration.</li>
+            <li><code>web/</code> &mdash; Flask blueprints, Socket.IO events, and front-end modules under
+                <code>web/static/js/modules/attacks/</code>.</li>
+            <li><code>utils/</code> &mdash; helpers for interface management (monitor/managed mode toggles).</li>
+            <li><code>run.py</code> &mdash; entry point that enforces root execution and bootstraps the environment.
+            </li>
+        </ul>
+        <h2 id=lab-first-disclaimer>Lab-first Disclaimer</h2>
+        <p>Airstrike is intended for lab use, red-team exercises, and research on networks you own or are explicitly
+            authorized to assess. Misuse may violate law or policy—operate responsibly and document authorization for
+            every engagement.</p>
+    </section>
+    <div data-template="site-footer"></div>
+    <script src="/script.min.js?ver=3dafc40a0d8cbf1d4de2fe8a08595670"></script>
+    <script>
+            (function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'999d86397d29bcc7',t:'MTc2MjM1ODAxMC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();
+    </script>
+</body>
+
+</html>
