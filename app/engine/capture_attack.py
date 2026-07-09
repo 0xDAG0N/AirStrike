@@ -2,6 +2,7 @@
 
 import os
 import re
+import glob
 import time
 import subprocess
 
@@ -68,11 +69,13 @@ def capture_worker(target_bssid, target_channel, network_interface, timeout_dura
     WPA_handshake_captured = False
 
     while not WPA_handshake_captured and not stop_signal.is_set():
-        # --- Clean up old capture files ---
-        cleanup_pattern = f"{capture_prefix}*"
-        cleanup_command_str = f"sudo rm -f {cleanup_pattern}"
+        # --- Clean up old capture files (no shell; glob + remove) ---
         try:
-            subprocess.run(cleanup_command_str, shell=True, check=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+            for stale_file in glob.glob(f"{capture_prefix}*"):
+                try:
+                    os.remove(stale_file)
+                except OSError:
+                    pass
         except Exception as e:
             log(f"[Capture Thread] Error during cleanup: {e}")
 

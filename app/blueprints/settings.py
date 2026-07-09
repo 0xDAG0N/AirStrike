@@ -3,6 +3,7 @@
 from flask import Blueprint, render_template, request, jsonify
 
 from app.config import config
+from app.core.validation import valid_interface
 from app.services.settings_service import (
     get_available_interfaces,
     save_interface_setting,
@@ -39,6 +40,8 @@ def get_interfaces():
 def set_interface():
     data = request.json
     if "interface" in data:
+        if not valid_interface(data["interface"]):
+            return jsonify({"success": False, "error": "Invalid interface name"}), 400
         success = save_interface_setting(data["interface"])
         return jsonify({"success": success})
     return jsonify({"success": False, "error": "No interface provided"})

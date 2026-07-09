@@ -13,6 +13,7 @@ from flask import Blueprint, jsonify, request, render_template, url_for
 from app.config import config
 from app.core.logging import logger
 from app.core.network_utils import set_managed_mode
+from app.core.validation import valid_bssid, valid_channel, sanitize_ssid
 from app.extensions import socketio
 from app.services.attack_service import (
     launch_deauth_attack,
@@ -63,13 +64,24 @@ def start_attack():
         attack_type = data["attack_type"]
         attack_config = data.get("config", {})
 
-        # Validate network data
+        # Validate network data — presence…
         required_network_fields = ["bssid", "essid", "channel"]
         for field in required_network_fields:
             if field not in network:
                 return jsonify(
                     {"success": False, "error": f"Missing required network field: {field}"}
                 )
+
+        # …then VALUES, before anything reaches the OS / attack engine.
+        if not valid_bssid(network["bssid"]):
+            return jsonify({"success": False, "error": "Invalid BSSID format"}), 400
+        if not valid_channel(network["channel"]):
+            return jsonify({"success": False, "error": "Invalid channel"}), 400
+        if sanitize_ssid(network["essid"]) is None:
+            return jsonify({"success": False, "error": "Invalid ESSID"}), 400
+        client = attack_config.get("client")
+        if client is not None and not valid_bssid(client):
+            return jsonify({"success": False, "error": "Invalid client MAC"}), 400
 
         # Initialize attack state
         attack_state["running"] = True

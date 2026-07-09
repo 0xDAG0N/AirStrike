@@ -43,23 +43,28 @@ log-dhcp
         return None
 
 
-def run_command(command):
+def run_command(argv):
+    """Run a command from an argv list — never through a shell interpreter."""
     try:
-        print(f"[*] Running: {command}")
-        subprocess.run(command, shell=True, check=True)
+        print(f"[*] Running: {' '.join(argv)}")
+        subprocess.run(argv, check=True)
     except subprocess.CalledProcessError:
-        print(f"[!] Command failed: {command}")
+        print(f"[!] Command failed: {' '.join(argv)}")
 
 
 def setup_fake_ap_network(interface='wlan0'):
-    # Bring up wlan0 with IP
-    run_command(f"ifconfig {interface} up 192.168.1.1 netmask 255.255.255.0")
+    # Bring up the AP interface with a static IP
+    run_command(["ifconfig", interface, "up", "192.168.1.1", "netmask", "255.255.255.0"])
     # Add static route
-    run_command("route add -net 192.168.1.0 netmask 255.255.255.0 gw 192.168.1.1")
+    run_command(["route", "add", "-net", "192.168.1.0", "netmask", "255.255.255.0", "gw", "192.168.1.1"])
     # Redirect HTTP to port 80
-    run_command("iptables -t nat -A PREROUTING -p tcp --dport 80 -j REDIRECT --to-port 80")
+    run_command(["iptables", "-t", "nat", "-A", "PREROUTING", "-p", "tcp", "--dport", "80", "-j", "REDIRECT", "--to-port", "80"])
     # Enable internet sharing
-    run_command("iptables --table nat --append POSTROUTING --out-interface eth0 -j MASQUERADE")
-    run_command("iptables --append FORWARD --in-interface wlan0 -j ACCEPT")
-    # Enable IP forwarding
-    run_command("echo 1 | tee /proc/sys/net/ipv4/ip_forward")
+    run_command(["iptables", "--table", "nat", "--append", "POSTROUTING", "--out-interface", "eth0", "-j", "MASQUERADE"])
+    run_command(["iptables", "--append", "FORWARD", "--in-interface", "wlan0", "-j", "ACCEPT"])
+    # Enable IP forwarding (was: echo 1 | tee /proc/sys/net/ipv4/ip_forward)
+    try:
+        with open("/proc/sys/net/ipv4/ip_forward", "w") as fwd:
+            fwd.write("1")
+    except OSError as exc:
+        print(f"[!] Could not enable IP forwarding: {exc}")

@@ -225,35 +225,36 @@ def launch_evil_twin_attack(network, attack_config):
         raise Exception("Failed to create required configuration files")
 
 
+def _stream_process(name, argv, stop_event):
+    """Run a long-lived process from an argv list (no shell) and stream output to the log."""
+    process = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+    try:
+        while not stop_event.is_set():
+            line = process.stdout.readline()
+            if line:
+                add_log_message(f"[{name}] {line.strip()}")
+            elif process.poll() is not None:
+                break
+            else:
+                time.sleep(0.1)
+    finally:
+        if process.poll() is None:
+            process.terminate()
+
+
 def run_hostapd(config_file, stop_event):
-    """Run hostapd with the specified configuration file."""
+    """Run hostapd with the specified configuration file (argv, no shell)."""
     try:
         add_log_message(f"Starting hostapd with config: {config_file}")
-        process = os.popen(f"hostapd {config_file}")
-
-        while not stop_event.is_set():
-            line = process.readline()
-            if line:
-                add_log_message(f"[hostapd] {line.strip()}")
-            time.sleep(0.1)
-
-        process.close()
+        _stream_process("hostapd", ["hostapd", config_file], stop_event)
     except Exception as e:
         add_log_message(f"Error in hostapd: {e}")
 
 
 def run_dnsmasq(config_file, stop_event):
-    """Run dnsmasq with the specified configuration file."""
+    """Run dnsmasq with the specified configuration file (argv, no shell)."""
     try:
         add_log_message(f"Starting dnsmasq with config: {config_file}")
-        process = os.popen(f"dnsmasq -C {config_file} -d")
-
-        while not stop_event.is_set():
-            line = process.readline()
-            if line:
-                add_log_message(f"[dnsmasq] {line.strip()}")
-            time.sleep(0.1)
-
-        process.close()
+        _stream_process("dnsmasq", ["dnsmasq", "-C", config_file, "-d"], stop_event)
     except Exception as e:
         add_log_message(f"Error in dnsmasq: {e}")
