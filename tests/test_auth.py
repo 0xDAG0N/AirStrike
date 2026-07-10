@@ -43,3 +43,23 @@ def test_login_blocks_open_redirect(anon_client):
     resp = anon_client.post("/login", data={"password": "test-pass", "next": "//evil.com"})
     assert resp.status_code == 302
     assert "evil.com" not in resp.headers["Location"]
+
+
+def test_cross_origin_request_rejected(client):
+    # Authenticated, but the Origin header is a different site → blocked.
+    resp = client.get("/dashboard_stats", headers={"Origin": "http://evil.example"})
+    assert resp.status_code == 403
+
+
+def test_login_brute_force_lockout(anon_client):
+    from app.core import auth
+
+    try:
+        for _ in range(auth._MAX_FAILS):
+            anon_client.post("/login", data={"password": "wrong"})
+        # Now locked: even the correct password is refused (no redirect, still unauthenticated).
+        resp = anon_client.post("/login", data={"password": "test-pass"})
+        assert resp.status_code == 200
+        assert anon_client.get("/dashboard_stats").status_code == 401
+    finally:
+        auth.clear_login_failures("127.0.0.1")

@@ -9,6 +9,7 @@ is a separate behavioral change.
 import os
 
 from app.config import config
+from app.core.validation import safe_path
 
 
 def get_available_interfaces():
@@ -52,11 +53,15 @@ def save_wordlist_setting(wordlist_path):
 def save_output_dir_setting(output_dir):
     """Save the output directory to the configuration and create it if it doesn't exist."""
     try:
-        if output_dir:
-            config["output_dir"] = output_dir
-            # Create directory if it doesn't exist
-            os.makedirs(config["output_dir"], exist_ok=True)
-            return True
-        return False
+        if not output_dir:
+            return False
+        # Jail the (root-created) capture directory under the working dir — block traversal
+        # and absolute-path escapes so a request can't makedirs anywhere on the host.
+        jailed = safe_path(output_dir, os.getcwd())
+        if jailed is None:
+            return False
+        config["output_dir"] = jailed
+        os.makedirs(jailed, exist_ok=True)
+        return True
     except Exception:
         return False

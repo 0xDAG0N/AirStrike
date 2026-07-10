@@ -171,7 +171,8 @@ def launch_evil_twin_attack(network, attack_config):
     # Extract parameters
     bssid = network["bssid"]  # noqa: F841 (kept for parity with original)
     ssid = network["essid"]
-    channel = attack_config.get("channel", int(network["channel"]))
+    # Always coerce to int — a raw string must never reach hostapd.conf (config injection).
+    channel = int(attack_config.get("channel", network["channel"]))
     captive_portal = attack_config.get("captive_portal", False)
 
     # Create output directory

@@ -9,8 +9,9 @@ import re
 
 # 00:11:22:33:44:55 form only.
 _BSSID_RE = re.compile(r"^[0-9A-Fa-f]{2}(?::[0-9A-Fa-f]{2}){5}$")
-# Linux interface names: short, alnum plus a few separators, no shell metacharacters.
-_INTERFACE_RE = re.compile(r"^[A-Za-z0-9_.@-]{1,15}$")
+# Linux interface names: must START alphanumeric (so it can't be parsed as a CLI flag like
+# "-rf"), then alnum plus a few separators; short; no shell metacharacters.
+_INTERFACE_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.-]{0,14}$")
 
 
 def valid_bssid(value):
@@ -30,6 +31,19 @@ def valid_channel(value):
     except (TypeError, ValueError):
         return False
     return 1 <= channel <= 233
+
+
+def bounded_number(value, lo, hi, as_int=True):
+    """Return the coerced number if it parses and lo <= n <= hi, else None.
+
+    Used to bound attacker-supplied counts/intervals/durations so they can't drive a
+    root-level resource-exhaustion DoS.
+    """
+    try:
+        num = int(value) if as_int else float(value)
+    except (TypeError, ValueError):
+        return None
+    return num if lo <= num <= hi else None
 
 
 def sanitize_ssid(value):

@@ -27,6 +27,8 @@ def test_valid_interface():
     assert not validation.valid_interface("wlan0 && reboot")
     assert not validation.valid_interface("")
     assert not validation.valid_interface("a" * 20)            # too long
+    assert not validation.valid_interface("-rf")               # leading dash -> CLI flag injection
+    assert not validation.valid_interface("-")
 
 
 def test_valid_channel():
@@ -83,3 +85,43 @@ def test_set_interface_rejects_injection(client, csrf):
         headers={"X-CSRFToken": csrf},
     )
     assert resp.status_code == 400
+
+
+def test_scan_rejects_bad_interface(client):
+    # GET argv-injection vector — rejected before any subprocess runs.
+    assert client.get("/scan_wifi?interface=wlan0;rm%20-rf").status_code == 400
+
+
+def test_start_attack_rejects_bad_config_channel(client, csrf):
+    resp = client.post(
+        "/start_attack",
+        json={
+            "attack_type": "evil_twin",
+            "network": {"bssid": "00:11:22:33:44:55", "essid": "x", "channel": "6"},
+            "config": {"channel": "6\ninject=1"},
+        },
+        headers={"X-CSRFToken": csrf},
+    )
+    assert resp.status_code == 400
+
+
+def test_start_attack_rejects_out_of_range_count(client, csrf):
+    resp = client.post(
+        "/start_attack",
+        json={
+            "attack_type": "deauth",
+            "network": {"bssid": "00:11:22:33:44:55", "essid": "x", "channel": "6"},
+            "config": {"count": 10 ** 12},
+        },
+        headers={"X-CSRFToken": csrf},
+    )
+    assert resp.status_code == 400
+
+
+def test_output_dir_rejects_traversal(client, csrf):
+    resp = client.post(
+        "/save_output_dir",
+        json={"output_dir": "../../etc/airstrike"},
+        headers={"X-CSRFToken": csrf},
+    )
+    assert resp.get_json()["success"] is False

@@ -13,7 +13,7 @@ from flask import Blueprint, jsonify, request, render_template, url_for
 from app.config import config
 from app.core.logging import logger
 from app.core.network_utils import set_managed_mode
-from app.core.validation import valid_bssid, valid_channel, sanitize_ssid
+from app.core.validation import valid_bssid, valid_channel, sanitize_ssid, bounded_number
 from app.extensions import socketio
 from app.services.attack_service import (
     launch_deauth_attack,
@@ -82,6 +82,15 @@ def start_attack():
         client = attack_config.get("client")
         if client is not None and not valid_bssid(client):
             return jsonify({"success": False, "error": "Invalid client MAC"}), 400
+
+        # Validate/bound attack-config values that flow into the engine (config injection + DoS).
+        if "channel" in attack_config and not valid_channel(attack_config["channel"]):
+            return jsonify({"success": False, "error": "Invalid channel"}), 400
+        for key, lo, hi in (("count", 1, 100000), ("duration", 1, 3600)):
+            if key in attack_config and bounded_number(attack_config[key], lo, hi) is None:
+                return jsonify({"success": False, "error": f"Invalid {key}"}), 400
+        if "interval" in attack_config and bounded_number(attack_config["interval"], 0.0, 60.0, as_int=False) is None:
+            return jsonify({"success": False, "error": "Invalid interval"}), 400
 
         # Initialize attack state
         attack_state["running"] = True

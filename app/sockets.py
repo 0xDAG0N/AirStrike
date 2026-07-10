@@ -5,6 +5,8 @@ Registered by the application factory after ``socketio.init_app(app)``. The impo
 (configured at app construction, not at import).
 """
 
+from flask import session
+
 from app.extensions import socketio
 from app.core.logging import logger
 from app.state import attack_state
@@ -15,6 +17,11 @@ def register_socket_handlers():
 
     @socketio.on("connect")
     def handle_connect():
+        # Reject unauthenticated sockets — the /socket.io transport is exempt from the HTTP
+        # before_request guard, so the connection itself is the auth boundary here.
+        if not session.get("authenticated"):
+            logger.warning("Rejected unauthenticated socket connection")
+            return False
         logger.info("Client connected")
         # Send a welcome message to confirm connection
         socketio.emit("welcome", {"message": "Connected to AirStrike server"})

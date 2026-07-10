@@ -2,6 +2,8 @@
  * Cracking (Handshake) Attack Module
  */
 
+import { escapeHtml } from '../ui.js';
+
 /**
  * Generate HTML for handshake attack configuration
  * @param {Object} network - The selected network
@@ -19,7 +21,7 @@ export function configureHandshake(network) {
         </div>
         <div class="alert alert-info">
             <p><strong>Cracking Attack:</strong> This attack captures the WPA/WPA2 handshake and immediately attempts to crack it with the selected wordlist.</p>
-            <p><strong>Target:</strong> ${network?.essid || 'Hidden Network'} (${network?.bssid || 'Unknown'})</p>
+            <p><strong>Target:</strong> ${escapeHtml(network?.essid || 'Hidden Network')} (${escapeHtml(network?.bssid || 'Unknown')})</p>
         </div>
     `;
 } 

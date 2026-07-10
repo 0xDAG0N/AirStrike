@@ -4,6 +4,7 @@ from flask import Blueprint, jsonify, request, render_template
 
 from app.config import config
 from app.core.logging import logger
+from app.core.validation import valid_interface
 from app.services.scan_service import scan_wifi_networks, check_interface_status
 
 scan_bp = Blueprint("scan", __name__)
@@ -25,6 +26,8 @@ def scan_wifi():
         JSON array of networks or empty array with 500 status on error
     """
     interface = request.args.get("interface", config["interface"])
+    if not valid_interface(interface):
+        return jsonify({"success": False, "error": "Invalid interface name"}), 400
     check_only = request.args.get("check_only", "false").lower() == "true"
 
     # Check interface status
