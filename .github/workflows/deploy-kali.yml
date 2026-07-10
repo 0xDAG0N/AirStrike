@@ -39,7 +39,11 @@ jobs:
           sudo systemctl restart airstrike
           sleep 3
           test "$(sudo systemctl is-active airstrike)" = active
-          curl -fsS -o /dev/null -w "smoke: /login HTTP %{http_code}\n" http://127.0.0.1:5000/login
+          # Liveness only (mode-agnostic): any HTTP response = server up. Don't assert a
+          # specific route/status, since /login exists only when auth is enabled.
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:5000/ || echo 000)
+          test "$code" != "000"
+          echo "smoke: server responded HTTP $code"
           echo "::endgroup::"
 
           echo "Deployed ${GITHUB_SHA} to the Kali lab."
