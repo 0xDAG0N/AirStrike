@@ -1,0 +1,45 @@
+name: Deploy to Kali lab
+
+# Continuous deployment to the self-hosted Kali lab box (192.168.1.39). The box is on a
+# private LAN, so a self-hosted runner (which polls GitHub outbound) does the work — no
+# inbound access from GitHub-hosted runners is possible. On every push to main it pulls the
+# new commit, installs, runs the test suite, and restarts the airstrike systemd service.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: kali-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, kali]
+    steps:
+      - name: Pull, install, test, and restart the service
+        run: |
+          set -euo pipefail
+          cd /home/kali/AirStrike
+          echo "::group::Sync to ${GITHUB_SHA}"
+          git fetch --quiet origin main
+          git reset --hard "${GITHUB_SHA}"
+          echo "::endgroup::"
+
+          echo "::group::Install"
+          .venv/bin/pip install -q --disable-pip-version-check -e . pytest
+          echo "::endgroup::"
+
+          echo "::group::Test"
+          AIRSTRIKE_SKIP_ROOT_CHECK=1 .venv/bin/python -m pytest -q
+          echo "::endgroup::"
+
+          echo "::group::Restart + smoke"
+          sudo systemctl restart airstrike
+          sleep 3
+          test "$(sudo systemctl is-active airstrike)" = active
+          curl -fsS -o /dev/null -w "smoke: /login HTTP %{http_code}\n" http://127.0.0.1:5000/login
+          echo "::endgroup::"
+
+          echo "Deployed ${GITHUB_SHA} to the Kali lab."
