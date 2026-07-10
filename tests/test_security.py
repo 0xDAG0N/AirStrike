@@ -118,6 +118,19 @@ def test_start_attack_rejects_out_of_range_count(client, csrf):
     assert resp.status_code == 400
 
 
+def test_start_attack_requires_authorization(client, csrf):
+    # Valid target + config, but no explicit authorization confirmation → refused.
+    resp = client.post(
+        "/start_attack",
+        json={
+            "attack_type": "deauth",
+            "network": {"bssid": "00:11:22:33:44:55", "essid": "x", "channel": "6"},
+        },
+        headers={"X-CSRFToken": csrf},
+    )
+    assert resp.status_code == 403
+
+
 def test_output_dir_rejects_traversal(client, csrf):
     resp = client.post(
         "/save_output_dir",

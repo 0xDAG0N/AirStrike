@@ -177,8 +177,8 @@ export const attackApi = {
      * @param {Object} config - The attack configuration
      * @returns {Promise} - Promise resolving to the result
      */
-    startAttack: (network, attackType, config) => 
-        apiPost('/start_attack', { network, attack_type: attackType, config }),
+    startAttack: (network, attackType, config, authorized) =>
+        apiPost('/start_attack', { network, attack_type: attackType, config, authorized }),
     
     /**
      * Stop the running attack

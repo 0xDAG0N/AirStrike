@@ -11,6 +11,7 @@ import threading
 from flask import Blueprint, jsonify, request, render_template, url_for
 
 from app.config import config
+from app.core.audit import audit
 from app.core.logging import logger
 from app.core.network_utils import set_managed_mode
 from app.core.validation import valid_bssid, valid_channel, sanitize_ssid, bounded_number
@@ -92,6 +93,14 @@ def start_attack():
         if "interval" in attack_config and bounded_number(attack_config["interval"], 0.0, 60.0, as_int=False) is None:
             return jsonify({"success": False, "error": "Invalid interval"}), 400
 
+        # Legal authorization gate: the operator must explicitly confirm authorization to
+        # assess this target before any attack launches (recorded in the audit log).
+        if data.get("authorized") is not True:
+            return jsonify({
+                "success": False,
+                "error": "You must confirm you are authorized to assess this network.",
+            }), 403
+
         # Initialize attack state
         attack_state["running"] = True
         attack_state["attack_type"] = attack_type
@@ -106,6 +115,15 @@ def start_attack():
 
         # Emit attack started event via WebSocket
         socketio.emit("attack_started", {"attack_type": attack_type, "target_network": network})
+
+        # Accountability record (P0 · S6).
+        audit(
+            "attack_start",
+            attack_type=attack_type,
+            bssid=network["bssid"],
+            essid=network["essid"],
+            authorized=True,
+        )
 
         try:
             # Launch the appropriate attack
@@ -175,6 +193,7 @@ def stop_attack():
 
         # Update attack state
         log_message("Attack stopped")
+        audit("attack_stop")
         reset_attack_state()
 
         # Emit attack stopped event via WebSocket

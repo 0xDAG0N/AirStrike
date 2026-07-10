@@ -97,15 +97,28 @@ export async function startAttack() {
         return;
     }
     
+    // Legal authorization gate — the operator must explicitly confirm authorization.
+    const authorized = window.confirm(
+        'AUTHORIZATION REQUIRED\n\n' +
+        'Confirm you own, or have explicit written authorization to assess, the selected ' +
+        'network. Unauthorized wireless attacks are illegal in most jurisdictions and are ' +
+        'recorded in the audit log.'
+    );
+    if (!authorized) {
+        showAlert('Attack cancelled — authorization not confirmed.', 'warning');
+        return;
+    }
+
     // Collect attack configuration
     const attackConfig = getAttackConfig(state.selectedAttack);
-    
+
     try {
         // Make API call to start attack
         const result = await attackApi.startAttack(
             state.selectedNetwork,
             state.selectedAttack,
-            attackConfig
+            attackConfig,
+            authorized
         );
         
         if (result.success) {
