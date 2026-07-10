@@ -52,6 +52,13 @@ def create_app(config_object=None):
     # --- blueprints (single registration; resolves the /attack_status collision) ---
     register_blueprints(app)
 
+    # --- auth: login gate + CSRF on every route (P0 · S3) ---
+    from app.blueprints.auth import auth_bp
+    from app.core.auth import init_auth, resolve_password
+
+    app.register_blueprint(auth_bp)
+    init_auth(app, resolve_password())
+
     # --- error handlers (were in web/app.py) ---
     @app.errorhandler(404)
     def page_not_found(e):

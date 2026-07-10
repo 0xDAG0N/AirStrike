@@ -18,6 +18,18 @@ socket.on('disconnect', () => {
 
 // Sudo authentication handling removed since we enforce root execution at startup
 
+/** Read the per-session CSRF token embedded in the page <head>. */
+function getCsrfToken() {
+    const meta = document.querySelector('meta[name="csrf-token"]');
+    return meta ? meta.getAttribute('content') : '';
+}
+
+/** On an authentication failure, send the operator to the login page. */
+function redirectToLogin() {
+    const next = encodeURIComponent(window.location.pathname + window.location.search);
+    window.location.href = `/login?next=${next}`;
+}
+
 /**
  * Make a GET request to the specified endpoint
  * @param {string} url - The endpoint URL
@@ -25,11 +37,12 @@ socket.on('disconnect', () => {
  */
 export async function apiGet(url) {
     try {
-        const response = await fetch(url);
-        
-        // Root execution is enforced at startup, so 401 errors should not happen
-        // If they do occur, they are handled by the general error case below
-        
+        const response = await fetch(url, { credentials: 'same-origin' });
+
+        if (response.status === 401) {
+            redirectToLogin();
+            throw new Error('Authentication required');
+        }
         if (!response.ok) {
             throw new Error(`HTTP error ${response.status}`);
         }
@@ -51,15 +64,18 @@ export async function apiPost(url, data) {
     try {
         const response = await fetch(url, {
             method: 'POST',
+            credentials: 'same-origin',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCsrfToken()
             },
             body: JSON.stringify(data)
         });
-        
-        // Root execution is enforced at startup, so 401 errors should not happen
-        // If they do occur, they are handled by the general error case below
-        
+
+        if (response.status === 401) {
+            redirectToLogin();
+            throw new Error('Authentication required');
+        }
         if (!response.ok) {
             throw new Error(`HTTP error ${response.status}`);
         }
@@ -83,15 +99,16 @@ export const networkApi = {
      */
     async scanNetworks() {
         try {
-            const response = await fetch('/scan_wifi');
-            
-            // Root execution is enforced at startup, so 401 errors should not happen
-            // If they do occur, they are handled by the general error case below
-            
+            const response = await fetch('/scan_wifi', { credentials: 'same-origin' });
+
+            if (response.status === 401) {
+                redirectToLogin();
+                throw new Error('Authentication required');
+            }
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            
+
             const data = await response.json();
             
             if (data.success === false) {
@@ -115,11 +132,12 @@ export const networkApi = {
      */
     async checkInterfaceStatus() {
         try {
-            const response = await fetch('/scan_wifi?check_only=true');
-            
-            // Root execution is enforced at startup, so 401 errors should not happen
-            // If they do occur, they are handled by the general error case below
-            
+            const response = await fetch('/scan_wifi?check_only=true', { credentials: 'same-origin' });
+
+            if (response.status === 401) {
+                redirectToLogin();
+                throw new Error('Authentication required');
+            }
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
