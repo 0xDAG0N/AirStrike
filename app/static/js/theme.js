@@ -48,7 +48,4 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    
-    // Note: Navigation is now handled by navigation.js
-    // We no longer need to handle navigation here
 }); 
