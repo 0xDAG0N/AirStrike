@@ -117,14 +117,9 @@ function triggerPasswordAlert(password) {
     if (lastPasswordAlert === password) return;
     
     lastPasswordAlert = password;
-    // Slight delay to ensure DOM paint before blocking alert
-    setTimeout(() => {
-        try {
-            window.alert(`Password: ${password}`);
-        } catch (error) {
-            console.error('Unable to display password alert:', error);
-        }
-    }, 50);
+    // Surface the cracked password as a persistent success toast (was a blocking window.alert
+    // that froze the UI and is inaccessible to screen readers).
+    showAlert(`Password found: ${password}`, 'success', 30000);
 }
 
 /**
@@ -161,7 +156,7 @@ export function displayNetworks(networks) {
         const essidAttr = escapeHtml(network.ESSID || '');
         const channel = escapeHtml(network.Channel);
         html += `
-                <div class="network-item" data-bssid="${bssid}" data-essid="${essidAttr}" data-channel="${channel}">
+                <div class="network-item" role="option" tabindex="0" aria-selected="false" aria-label="Network ${essid}, BSSID ${bssid}, channel ${channel}" data-bssid="${bssid}" data-essid="${essidAttr}" data-channel="${channel}">
                 <div class="network-name">${essid}</div>
                 <div class="network-details">
                     <span class="network-bssid">${bssid}</span>

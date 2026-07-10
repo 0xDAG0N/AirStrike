@@ -149,6 +149,16 @@ export function initScanner() {
     const networkList = document.getElementById('network-list');
     if (networkList) {
         networkList.addEventListener('click', handleNetworkSelection);
+        // Keyboard access: Enter/Space selects the focused network item.
+        networkList.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                const item = e.target.closest('.network-item');
+                if (item && !item.classList.contains('error')) {
+                    e.preventDefault();
+                    handleNetworkSelection(e);
+                }
+            }
+        });
     }
 }
 
@@ -166,10 +176,12 @@ function handleNetworkSelection(e) {
     // Remove selection from all networks
     document.querySelectorAll('.network-item').forEach(item => {
         item.classList.remove('selected');
+        item.setAttribute('aria-selected', 'false');
     });
-    
+
     // Add selection to clicked network
     networkItem.classList.add('selected');
+    networkItem.setAttribute('aria-selected', 'true');
     
     // Store selected network data
     const selectedNetwork = {
