@@ -138,3 +138,11 @@ def test_output_dir_rejects_traversal(client, csrf):
         headers={"X-CSRFToken": csrf},
     )
     assert resp.get_json()["success"] is False
+
+
+def test_test_deauth_returns_serializable_json(client):
+    # Regression: scapy >= 2.6 conf.iface is a NetworkInterface object (not JSON-serializable),
+    # which made /test_deauth 500 with "Object of type NetworkInterface is not JSON serializable".
+    resp = client.get("/test_deauth")
+    assert resp.status_code == 200
+    assert resp.get_json() is not None

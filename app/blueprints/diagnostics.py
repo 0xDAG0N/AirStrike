@@ -337,7 +337,9 @@ def test_deauth():
             "root_privileges": os.geteuid() == 0,
             "message": "Deauth packet created successfully but not sent. This confirms scapy is working correctly.",
             "would_send_to": {
-                "interface": conf.iface,
+                # scapy >= 2.6 returns a NetworkInterface object here, which is not JSON
+                # serializable — coerce to its name string.
+                "interface": str(conf.iface),
                 "bssid": test_bssid,
                 "client": test_client,
             },
