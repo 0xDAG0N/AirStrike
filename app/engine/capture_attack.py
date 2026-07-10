@@ -2,8 +2,11 @@
 
 import os
 import re
+import glob
 import time
 import subprocess
+
+from app.core.validation import ValidationError, validate_bssid, validate_interface
 
 # Precompile ANSI escape matcher once (aircrack-ng emits cursor codes)
 ANSI_ESCAPE_PATTERN = re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]')
@@ -53,6 +56,17 @@ def capture_worker(target_bssid, target_channel, network_interface, timeout_dura
     ``log`` is an injected callback (message -> None); defaults to printing when absent.
     """
     log = log or _default_log
+
+    # Defence in depth: the service layer validates before spawning this worker, but the
+    # worker builds sudo argv from these values, so refuse to run on anything unexpected.
+    try:
+        target_bssid = validate_bssid(target_bssid)
+        network_interface = validate_interface(network_interface)
+    except ValidationError as e:
+        log(f"[Capture Thread] Refusing to start: {e}")
+        stop_signal.set()
+        return
+
     base_capture_dir = "./captures/"
     safe_bssid_name = target_bssid.replace(":", "-")
     output_dir = os.path.join(base_capture_dir, safe_bssid_name)
@@ -68,11 +82,13 @@ def capture_worker(target_bssid, target_channel, network_interface, timeout_dura
     WPA_handshake_captured = False
 
     while not WPA_handshake_captured and not stop_signal.is_set():
-        # --- Clean up old capture files ---
-        cleanup_pattern = f"{capture_prefix}*"
-        cleanup_command_str = f"sudo rm -f {cleanup_pattern}"
+        # --- Clean up old capture files (shell-free glob removal, was `sudo rm -f ...`) ---
         try:
-            subprocess.run(cleanup_command_str, shell=True, check=False, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
+            for stale in glob.glob(f"{capture_prefix}*"):
+                try:
+                    os.remove(stale)
+                except OSError:
+                    pass  # Missing / permission-denied file: nothing to clean
         except Exception as e:
             log(f"[Capture Thread] Error during cleanup: {e}")
 

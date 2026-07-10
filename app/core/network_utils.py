@@ -17,8 +17,11 @@ import subprocess
 import re
 import sys
 
+from app.core.validation import validate_interface
+
 
 def set_monitor_mode(interface_name):
+    interface_name = validate_interface(interface_name)
     try:
         subprocess.run(["sudo", "ifconfig", interface_name, "down"], check=True)
         subprocess.run(["sudo", "iwconfig", interface_name, "mode", "monitor"], check=True)
@@ -33,6 +36,7 @@ def set_monitor_mode(interface_name):
 
 
 def set_managed_mode(interface_name):
+    interface_name = validate_interface(interface_name)
     try:
         subprocess.run(
             ["sudo", "ifconfig", interface_name, "down"], check=True, capture_output=True
@@ -67,7 +71,12 @@ def run_scan(interface):
         list: A list of dictionaries, where each dictionary represents a Wi-Fi network
               and contains its details. Returns an empty list if an error occurs or
               no networks are found.
+
+    Raises:
+        ValidationError: if ``interface`` is not a valid interface name. Validation happens
+            before the scan's own try/except so a bad interface never reaches ``sudo``.
     """
+    interface = validate_interface(interface)
     print(f"Scanning for Wi-Fi networks on interface {interface}...")
     try:
         # Using iw scan is often preferred over iwlist nowadays if available

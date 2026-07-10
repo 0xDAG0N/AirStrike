@@ -1,12 +1,12 @@
 """Privilege / command-execution helpers.
 
-Moved verbatim from the old ``web.shared`` god-module. The application enforces root
-execution at startup, so ``run_with_sudo`` runs commands directly when already root.
+Moved from the old ``web.shared`` god-module. The application enforces root execution at
+startup, so ``run_with_sudo`` runs commands directly when already root.
 
-NOTE (follow-up, out of scope for the structural refactor): ``run_with_sudo`` builds its
-argument list with ``command.split()`` and several callers interpolate user-controlled
-values (BSSID / interface) into the command string. That is a command-injection surface
-and should be hardened separately (accept an argv list + sanitize inputs).
+``run_with_sudo`` accepts an **argv list** and never invokes a shell. It used to take a
+shell string and split it with ``command.split()``, while callers interpolated
+user-controlled values (BSSID / interface) into that string — a command-injection surface.
+Passing a ``str`` is now rejected outright; callers build validated argv lists instead.
 """
 
 import os
@@ -17,41 +17,50 @@ from app.core.logging import logger
 
 def run_with_sudo(command, password=None):
     """
-    Run a command with sudo privileges.
-    Since we're running as root, this is simplified to just run the command directly.
+    Run an argv command with root privileges, prefixing ``sudo`` only when not already root.
 
     Args:
-        command (str): The command to run
-        password (str, optional): Ignored parameter, kept for compatibility
+        command (list[str] | tuple[str, ...]): The command as an argv list, e.g.
+            ``["ip", "link", "show", "wlan0"]``. A plain string is rejected — shell strings
+            are a command-injection hazard and are no longer accepted.
+        password (str, optional): Ignored parameter, kept for backwards-compatible callers.
 
     Returns:
         tuple: (success, output, error)
+
+    Raises:
+        TypeError: if ``command`` is a ``str`` or not an iterable of argv tokens.
+        ValueError: if ``command`` is empty.
     """
+    if isinstance(command, (str, bytes)):
+        raise TypeError(
+            "run_with_sudo requires an argv list (e.g. ['ip', 'link', 'show', iface]), "
+            "not a shell string"
+        )
     try:
-        # If we're already running as root, don't use sudo
-        if os.geteuid() == 0:
-            # Run the command directly without sudo
-            process = subprocess.Popen(
-                command.split(),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
-        else:
-            # Run with sudo if we're not root
-            process = subprocess.Popen(
-                ["sudo"] + command.split(),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-            )
+        argv = [str(token) for token in command]
+    except TypeError:
+        raise TypeError("run_with_sudo requires an iterable of argv tokens")
+    if not argv:
+        raise ValueError("run_with_sudo requires a non-empty command")
+
+    try:
+        # If we're already running as root, don't use sudo; otherwise prefix it.
+        full_argv = argv if os.geteuid() == 0 else ["sudo", *argv]
+
+        process = subprocess.Popen(
+            full_argv,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
 
         stdout, stderr = process.communicate()
         success = process.returncode == 0
 
         # Log command execution for debugging
         if not success:
-            logger.debug(f"Command failed: {command}\nStderr: {stderr}")
+            logger.debug(f"Command failed: {argv}\nStderr: {stderr}")
 
         return success, stdout, stderr
     except Exception as e:
