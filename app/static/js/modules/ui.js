@@ -5,6 +5,22 @@
 let lastPasswordAlert = null;
 
 /**
+ * Escape a value for safe interpolation into HTML (text or double-quoted attribute).
+ * Attacker-controlled data — e.g. a nearby AP's SSID, or a log line echoing one — must
+ * never reach innerHTML unescaped.
+ * @param {*} value
+ * @returns {string}
+ */
+export function escapeHtml(value) {
+    return String(value === null || value === undefined ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/**
  * Show an alert message
  * @param {string} message - The message to display
  * @param {string} type - The alert type (success, danger, warning, info)
@@ -66,7 +82,7 @@ export function updateAttackLog(logEntries) {
     let logHTML = '';
     logEntries.forEach(entry => {
         const { className, message } = formatLogEntry(entry);
-        logHTML += `<div class="log-entry ${className}">${message}</div>`;
+        logHTML += `<div class="log-entry ${className}">${escapeHtml(message)}</div>`;
     });
     
     logContainer.innerHTML = logHTML;
@@ -140,12 +156,16 @@ export function displayNetworks(networks) {
     
     let html = '';
     networks.forEach(network => {
+        const bssid = escapeHtml(network.BSSID);
+        const essid = escapeHtml(network.ESSID || 'Hidden Network');
+        const essidAttr = escapeHtml(network.ESSID || '');
+        const channel = escapeHtml(network.Channel);
         html += `
-                <div class="network-item" data-bssid="${network.BSSID}" data-essid="${network.ESSID || ''}" data-channel="${network.Channel}">
-                <div class="network-name">${network.ESSID || 'Hidden Network'}</div>
+                <div class="network-item" data-bssid="${bssid}" data-essid="${essidAttr}" data-channel="${channel}">
+                <div class="network-name">${essid}</div>
                 <div class="network-details">
-                    <span class="network-bssid">${network.BSSID}</span>
-                    <span class="network-channel">CH: ${network.Channel}</span>
+                    <span class="network-bssid">${bssid}</span>
+                    <span class="network-channel">CH: ${channel}</span>
                 </div>
             </div>
         `;
@@ -172,9 +192,9 @@ export function displayNetworkInfo(network) {
             <div class="card">
                 <div class="card-header">Selected Network</div>
                 <div class="card-body">
-                    <p><strong>SSID:</strong> ${network.essid || 'Hidden Network'}</p>
-                    <p><strong>BSSID:</strong> ${network.bssid}</p>
-                    <p><strong>Channel:</strong> ${network.channel}</p>
+                    <p><strong>SSID:</strong> ${escapeHtml(network.essid || 'Hidden Network')}</p>
+                    <p><strong>BSSID:</strong> ${escapeHtml(network.bssid)}</p>
+                    <p><strong>Channel:</strong> ${escapeHtml(network.channel)}</p>
                 </div>
             </div>
         `;

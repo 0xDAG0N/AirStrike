@@ -15,6 +15,14 @@ factory reads from ``AIRSTRIKE_SECRET_KEY`` (falling back to a generated key wit
 warning). Making the rest env-driven would be an easy, separate follow-up.
 """
 
+import os
+
+
+def _bind_host():
+    """Bind to loopback by default. Exposing the root-privileged control panel to the whole
+    network is a deliberate, security-relevant opt-in via AIRSTRIKE_BIND_ALL=1."""
+    return "0.0.0.0" if os.environ.get("AIRSTRIKE_BIND_ALL") == "1" else "127.0.0.1"
+
 
 # Runtime, user-mutable settings (was web.shared.config).
 config = {
@@ -32,7 +40,7 @@ class Config:
     """
 
     DEBUG = False
-    HOST = "0.0.0.0"
+    HOST = _bind_host()
     PORT = 5000
 
 

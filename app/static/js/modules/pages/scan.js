@@ -4,7 +4,7 @@
 
 import { initScanner, scanNetworks, checkInterfaceStatus } from '../scanner.js';
 import { getStoredNetwork } from '../state.js';
-import { showAlert } from '../ui.js';
+import { showAlert, escapeHtml } from '../ui.js';
 
 /**
  * Initialize scan page
@@ -47,7 +47,7 @@ export function initScanPage() {
                 // Show a message about the previously selected network
                 networkList.innerHTML = `
                     <div class="alert alert-info">
-                        Previously selected network: ${storedNetwork.essid || 'Hidden Network'} (${storedNetwork.bssid})
+                        Previously selected network: ${escapeHtml(storedNetwork.essid || 'Hidden Network')} (${escapeHtml(storedNetwork.bssid)})
                         <br>
                         Click "Scan Networks" to select a different network.
                     </div>

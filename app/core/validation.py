@@ -12,6 +12,7 @@ Each validator raises :class:`ValidationError` (a ``ValueError`` subclass) on ba
 returns a normalised value on success. They are pure — no global state, no subprocess.
 """
 
+import os
 import re
 
 __all__ = [
@@ -20,6 +21,12 @@ __all__ = [
     "validate_interface",
     "validate_channel",
     "validate_essid",
+    "valid_bssid",
+    "valid_interface",
+    "valid_channel",
+    "sanitize_ssid",
+    "bounded_number",
+    "safe_path",
 ]
 
 
@@ -107,3 +114,74 @@ def validate_essid(value):
     if any(ord(ch) < 0x20 or ord(ch) == 0x7F for ch in value):
         raise ValidationError(f"ESSID contains control characters: {value!r}")
     return value
+
+
+# --- Compatibility helpers (bool / None returning) used by the route + settings layer ---
+# The validators above raise on bad input; these thin wrappers return bool / None / a bounded
+# value, which is what the request handlers and the settings service expect.
+
+def valid_bssid(value):
+    """True if ``value`` is a well-formed BSSID."""
+    try:
+        validate_bssid(value)
+        return True
+    except ValidationError:
+        return False
+
+
+def valid_interface(value):
+    """True if ``value`` is a safe interface name."""
+    try:
+        validate_interface(value)
+        return True
+    except ValidationError:
+        return False
+
+
+def valid_channel(value):
+    """True if ``value`` is an in-range 802.11 channel."""
+    try:
+        validate_channel(value)
+        return True
+    except ValidationError:
+        return False
+
+
+def sanitize_ssid(value):
+    """Return the ESSID if safe to write into hostapd.conf, else None."""
+    try:
+        return validate_essid(value)
+    except ValidationError:
+        return None
+
+
+def bounded_number(value, lo, hi, as_int=True):
+    """Return the coerced number if it parses and lo <= n <= hi, else None.
+
+    Bounds attacker-supplied counts/intervals/durations so they can't drive a root-level
+    resource-exhaustion DoS.
+    """
+    try:
+        num = int(value) if as_int else float(value)
+    except (TypeError, ValueError):
+        return None
+    return num if lo <= num <= hi else None
+
+
+def safe_path(value, base):
+    """Return an absolute path guaranteed to sit inside ``base``, else None.
+
+    Blocks path traversal (``../``) and absolute-path escapes on user-supplied output paths
+    that reach a root-level ``os.makedirs``.
+    """
+    if not isinstance(value, str) or not value:
+        return None
+    base_abs = os.path.abspath(base)
+    candidate = (
+        os.path.abspath(value)
+        if os.path.isabs(value)
+        else os.path.abspath(os.path.join(base_abs, value))
+    )
+    if candidate == base_abs or candidate.startswith(base_abs + os.sep):
+        return candidate
+    return None

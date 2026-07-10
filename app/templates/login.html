@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AirStrike — Sign in</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <style>
+        body { display: flex; min-height: 100vh; align-items: center; justify-content: center; margin: 0; }
+        .login-card {
+            width: 100%; max-width: 340px; padding: 32px 28px; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex; flex-direction: column; gap: 16px; text-align: center;
+        }
+        .login-card h1 { margin: 0; letter-spacing: 2px; }
+        .login-card .sub { margin: 0; opacity: 0.6; font-size: 0.9rem; }
+        .login-card input[type="password"] {
+            width: 100%; padding: 12px 14px; border-radius: 8px; font-size: 1rem; box-sizing: border-box;
+        }
+        .login-card button { width: 100%; padding: 12px; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+        .login-card .alert { margin: 0; }
+    </style>
+</head>
+<body>
+    <form class="login-card" method="POST" action="{{ url_for('auth.login') }}">
+        <h1>AirStrike</h1>
+        <p class="sub">Authentication required</p>
+        {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+        <input type="password" name="password" placeholder="Password" autofocus required
+               autocomplete="current-password">
+        <input type="hidden" name="next" value="{{ next }}">
+        <button type="submit" class="btn btn-primary">Sign in</button>
+    </form>
+</body>
+</html>

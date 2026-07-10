@@ -85,6 +85,7 @@
             <div class="card-header">Run Diagnostic Commands</div>
             <div class="card-body">
                 <form action="{{ url_for('diagnostics.run_diagnostic') }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <div class="form-group">
                         <label for="command">Select Command:</label>
                         <select name="command" id="command" class="form-control">

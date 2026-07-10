@@ -177,7 +177,7 @@ def test_diagnostic_resolver_rejects_injection(command):
     assert _resolve_diagnostic_argv(command) is None
 
 
-def test_run_diagnostic_route_runs_only_allowed(client, monkeypatch):
+def test_run_diagnostic_route_runs_only_allowed(client, csrf, monkeypatch):
     import app.blueprints.diagnostics as diag
 
     calls = []
@@ -188,14 +188,14 @@ def test_run_diagnostic_route_runs_only_allowed(client, monkeypatch):
 
     monkeypatch.setattr(diag, "run_with_sudo", fake_run_with_sudo)
 
-    # Allowed command is translated to argv and executed.
-    resp = client.post("/run_diagnostic", data={"command": "ifconfig"})
+    # Allowed command is translated to argv and executed. (CSRF token required now.)
+    resp = client.post("/run_diagnostic", data={"command": "ifconfig", "csrf_token": csrf})
     assert resp.status_code == 200
     assert calls == [["ifconfig"]]
 
     # Injection attempt is rejected before run_with_sudo is ever called.
     calls.clear()
-    resp = client.post("/run_diagnostic", data={"command": "ifconfig; rm -rf /"})
+    resp = client.post("/run_diagnostic", data={"command": "ifconfig; rm -rf /", "csrf_token": csrf})
     assert resp.status_code in (302, 303)
     assert calls == []
 

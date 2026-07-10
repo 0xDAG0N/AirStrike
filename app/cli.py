@@ -58,6 +58,15 @@ def main():
     # Create output directory if it doesn't exist.
     os.makedirs(config["output_dir"], exist_ok=True)
 
+    if Config.HOST == "0.0.0.0":
+        print(
+            "\n[!] WARNING: AIRSTRIKE_BIND_ALL exposes this root-privileged panel on ALL "
+            "interfaces over PLAINTEXT HTTP — the session cookie and CSRF token can be "
+            "sniffed and replayed on the network. Prefer the default loopback bind with an "
+            "SSH tunnel, or terminate TLS in front.\n",
+            flush=True,
+        )
+
     is_root = (not hasattr(os, "geteuid")) or os.geteuid() == 0
     print("\n" + "=" * 60)
     print("Starting AirStrike with Socket.IO enabled")

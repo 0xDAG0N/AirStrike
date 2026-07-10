@@ -2,6 +2,8 @@
  * Deauth Attack Module
  */
 
+import { escapeHtml } from '../ui.js';
+
 /**
  * Generate HTML for deauth attack configuration
  * @param {Object} network - The selected network
@@ -23,7 +25,7 @@ export function configureDeauth(network) {
         </div>
         <div class="alert alert-info">
             <p><strong>Deauthentication Attack:</strong> This attack will send deauthentication packets to force clients to disconnect from the selected access point.</p>
-            <p><strong>Target:</strong> ${network?.essid || 'Hidden Network'} (${network?.bssid || 'Unknown'})</p>
+            <p><strong>Target:</strong> ${escapeHtml(network?.essid || 'Hidden Network')} (${escapeHtml(network?.bssid || 'Unknown')})</p>
         </div>
     `;
 } 
