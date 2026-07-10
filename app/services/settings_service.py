@@ -9,6 +9,7 @@ is a separate behavioral change.
 import os
 
 from app.config import config
+from app.core.validation import ValidationError, validate_interface
 
 
 def get_available_interfaces():
@@ -28,11 +29,18 @@ def get_available_interfaces():
 
 
 def save_interface_setting(interface_name):
-    """Save the selected interface to the configuration."""
+    """Save the selected interface to the configuration.
+
+    The interface is whitelisted before it is stored: ``config['interface']`` flows into
+    ``sudo`` / ``iw`` argv across the app, so an invalid name is rejected here rather than
+    persisted. Returns ``False`` on a missing or invalid interface.
+    """
     try:
-        if interface_name:
-            config["interface"] = interface_name
-            return True
+        if not interface_name:
+            return False
+        config["interface"] = validate_interface(interface_name)
+        return True
+    except ValidationError:
         return False
     except Exception:
         return False

@@ -3,6 +3,7 @@ inline). Trivial orchestration — no separate service module."""
 
 import os
 import re
+import shlex
 import platform
 import subprocess
 import shutil
@@ -13,6 +14,7 @@ from flask import Blueprint, render_template, request, jsonify, redirect, url_fo
 from app.config import config
 from app.core.logging import logger
 from app.core.sudo import run_with_sudo
+from app.core.validation import ValidationError, validate_interface
 
 diagnostics_bp = Blueprint("diagnostics", __name__)
 
@@ -35,8 +37,14 @@ def get_interface_details(interface):
     }
 
     try:
+        interface = validate_interface(interface)
+    except ValidationError:
+        logger.error(f"Refusing to query invalid interface: {interface!r}")
+        return details
+
+    try:
         # Check if interface exists
-        success, output, _ = run_with_sudo(f"ip link show {interface}")
+        success, output, _ = run_with_sudo(["ip", "link", "show", interface])
         if success:
             details["exists"] = True
 
@@ -52,7 +60,7 @@ def get_interface_details(interface):
                 details["mac_address"] = mac_match.group(1)
 
         # Check if it's a wireless interface
-        success, output, _ = run_with_sudo(f"iwconfig {interface}")
+        success, output, _ = run_with_sudo(["iwconfig", interface])
         if success and "no wireless extensions" not in output.lower():
             details["is_wireless"] = True
 
@@ -62,7 +70,7 @@ def get_interface_details(interface):
                 details["mode"] = mode_match.group(1)
 
         # Try to get driver information
-        success, output, _ = run_with_sudo(f"ethtool -i {interface}")
+        success, output, _ = run_with_sudo(["ethtool", "-i", interface])
         if success:
             driver_match = re.search(r"driver:\s+(\w+)", output)
             if driver_match:
@@ -73,12 +81,16 @@ def get_interface_details(interface):
             if chipset_match:
                 details["chipset"] = chipset_match.group(1)
 
-        # Check if monitor mode is supported
-        success, output, _ = run_with_sudo(
-            f"iw phy `iw dev {interface} info | grep wiphy | awk '{{print $2}}'` info"
-        )
-        if success and "monitor" in output:
-            details["supports_monitor"] = True
+        # Check if monitor mode is supported. The old one-liner shelled out to
+        # `iw phy `iw dev IFACE info | grep wiphy | awk ...` info` — resolve the wiphy index
+        # in Python instead and run each `iw` call as argv (no shell, no backticks).
+        success, output, _ = run_with_sudo(["iw", "dev", interface, "info"])
+        if success:
+            wiphy_match = re.search(r"wiphy\s+(\d+)", output)
+            if wiphy_match:
+                success, output, _ = run_with_sudo(["iw", "phy", f"phy{wiphy_match.group(1)}", "info"])
+                if success and "monitor" in output:
+                    details["supports_monitor"] = True
 
         return details
     except Exception as e:
@@ -107,27 +119,24 @@ def get_system_info():
                     info["os"] = name_match.group(1)
 
         # Get kernel version
-        success, output, _ = run_with_sudo("uname -r")
+        success, output, _ = run_with_sudo(["uname", "-r"])
         if success:
             info["kernel"] = output.strip()
 
         # Get hostname
-        success, output, _ = run_with_sudo("hostname")
+        success, output, _ = run_with_sudo(["hostname"])
         if success:
             info["hostname"] = output.strip()
 
         # Check if NetworkManager is running
-        success, output, _ = run_with_sudo("systemctl is-active NetworkManager")
+        success, output, _ = run_with_sudo(["systemctl", "is-active", "NetworkManager"])
         if success and "active" in output:
             info["network_manager"] = "Active"
         else:
-            # Try another method
-            success, output, _ = run_with_sudo("ps aux | grep NetworkManager")
-            if (
-                success
-                and "NetworkManager" in output
-                and not output.strip().endswith("grep NetworkManager")
-            ):
+            # Try another method: list processes and look for NetworkManager (was a shell
+            # `ps aux | grep NetworkManager` pipe; grep in Python instead).
+            success, output, _ = run_with_sudo(["ps", "aux"])
+            if success and "NetworkManager" in output:
                 info["network_manager"] = "Running"
 
         return info
@@ -169,38 +178,78 @@ def show_diagnostics():
     )
 
 
+# The diagnostic commands the UI offers, each mapped to a fixed argv list. The submitted
+# ``command`` string is matched against this allowlist and translated to argv — user input
+# never becomes a shell string. ``lsmod`` ignores trailing arguments, so the historical
+# ``lsmod | grep -E ...`` entry only ever ran plain ``lsmod``; that is preserved here.
+_STATIC_DIAGNOSTIC_COMMANDS = {
+    "iwconfig": ["iwconfig"],
+    "ifconfig": ["ifconfig"],
+    "ip a": ["ip", "a"],
+    "rfkill list": ["rfkill", "list"],
+    "lsmod": ["lsmod"],
+    'lsmod | grep -E "^(cfg|mac|rtl|ath|iw)"': ["lsmod"],
+}
+
+# Human-readable allowlist for the "not allowed" flash message.
+_ALLOWED_DIAGNOSTIC_HELP = [
+    "iwconfig",
+    "ifconfig",
+    "ip a",
+    "iwlist <interface> scanning",
+    "iw dev <interface> scan",
+    "rfkill list",
+    'lsmod | grep -E "^(cfg|mac|rtl|ath|iw)"',
+]
+
+
+def _resolve_diagnostic_argv(command):
+    """Translate an allow-listed diagnostic command string into a safe argv list.
+
+    Returns the argv list, or ``None`` if the command is not allow-listed or carries an
+    invalid interface. Never returns a shell string; interface-parameterised commands
+    validate the interface token via :func:`validate_interface`.
+    """
+    command = (command or "").strip()
+    if command in _STATIC_DIAGNOSTIC_COMMANDS:
+        return list(_STATIC_DIAGNOSTIC_COMMANDS[command])
+
+    try:
+        tokens = shlex.split(command)
+    except ValueError:
+        return None
+
+    try:
+        # `iwlist <interface> scanning`
+        if len(tokens) == 3 and tokens[0] == "iwlist" and tokens[2] == "scanning":
+            return ["iwlist", validate_interface(tokens[1]), "scanning"]
+        # `iw dev <interface> scan`
+        if len(tokens) == 4 and tokens[0] == "iw" and tokens[1] == "dev" and tokens[3] == "scan":
+            return ["iw", "dev", validate_interface(tokens[2]), "scan"]
+    except ValidationError:
+        return None
+
+    return None
+
+
 @diagnostics_bp.route("/run_diagnostic", methods=["POST"])
 def run_diagnostic():
-    """Run a diagnostic command with sudo privileges"""
+    """Run an allow-listed diagnostic command (translated to argv, never a shell string)."""
     command = request.form.get("command")
     if not command:
         flash("No command provided", "danger")
         return redirect(url_for("diagnostics.show_diagnostics"))
 
-    # Only allow certain safe diagnostic commands
-    allowed_commands = [
-        "iwconfig",
-        "ifconfig",
-        "ip a",
-        "iwlist",
-        "iw dev",
-        "rfkill list",
-        'lsmod | grep -E "^(cfg|mac|rtl|ath|iw)"',
-    ]
-
-    # Check if the command is allowed
-    command_allowed = False
-    for allowed in allowed_commands:
-        if command.startswith(allowed):
-            command_allowed = True
-            break
-
-    if not command_allowed:
-        flash(f'Command not allowed. Allowed commands: {", ".join(allowed_commands)}', "danger")
+    argv = _resolve_diagnostic_argv(command)
+    if argv is None:
+        flash(
+            f'Command not allowed. Allowed commands: {", ".join(_ALLOWED_DIAGNOSTIC_HELP)}',
+            "danger",
+        )
         return redirect(url_for("diagnostics.show_diagnostics"))
 
     # Run the command
-    success, output, error = run_with_sudo(command)
+    success, output, error = run_with_sudo(argv)
 
     # Show the result
     if success:
