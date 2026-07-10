@@ -24,7 +24,7 @@ header.bg-cover::before {
 }
 
 #banner-logo {
-	background: url(images/airstrike-jet-dragon-icon.svg)no-repeat;
+	background: url(images/airstrike-jet-dragon-icon.png)no-repeat;
 	background-position: 100% 30px;
 	background-size: auto 410px;
 	filter: drop-shadow(20px 20px 20px #36f03c);
