@@ -1,0 +1,30 @@
+# Airstrike
+
+> Airstrike is an open-source, Python-based Wi-Fi penetration testing toolkit with a browser-based control panel. It runs on Linux and supports WPA handshake capture and password cracking, Evil Twin (rogue access point) attacks, and deauthentication attacks.
+
+Airstrike is built by a Jordan-based offensive-security team and is distributed free of charge as open source via GitHub. It wraps trusted command-line tools (such as aircrack-ng and hostapd) behind a real-time Flask + Socket.IO web interface so that wireless security tests can be run and monitored from a browser.
+
+Airstrike is intended strictly for authorized penetration testing, security research, and education on networks you own or have explicit written permission to test. Unauthorized use against networks you do not control is illegal.
+
+## Documentation
+- [Documentation](https://airstrike.dev/docs/): Installation, runtime requirements, configuration, and usage.
+- [Attack techniques](https://airstrike.dev/attacks/): How the deauthentication, Evil Twin, and handshake-capture modules work.
+- [Features](https://airstrike.dev/features/): Overview of the toolkit's capabilities and interface.
+- [FAQ](https://airstrike.dev/faq/): Common questions on requirements, root access, adapters, safety, and reporting bugs.
+
+## Project
+- [Get Airstrike / Release notes](https://airstrike.dev/releases/): Download builds and source archives.
+- [GitHub repository](https://github.com/mahmoud-sadder/airstrike): Source code, issues, and roadmap.
+
+## About
+- [Team](https://airstrike.dev/about-us/): The security researchers and advisors behind Airstrike.
+- [Partnerships](https://airstrike.dev/partnerships/): Collaborations and community partners.
+- [Contact](https://airstrike.dev/contact/): How to reach the team or report a security issue.
+
+## Requirements
+- Linux with root privileges.
+- A Wi-Fi adapter that supports monitor mode and packet injection (USB adapters with Atheros/Ralink chipsets are known-working).
+- Underlying tooling: the aircrack-ng suite and hostapd.
+
+## Status
+Airstrike is an early, actively developed build (v0.0). Interfaces and capabilities may change.

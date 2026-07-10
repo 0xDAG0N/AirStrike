@@ -3,7 +3,7 @@
 
 <head itemscope itemtype="http://schema.org/WebPage">
     <meta charset=utf-8>
-    <meta name=viewport content="width=device-width">
+    <meta name=viewport content="width=device-width, initial-scale=1">
     <title itemprop=name>FAQ - Frequently Asked Questions | Airstrike</title>
     <meta itemprop=name content="FAQ - Frequently Asked Questions | Airstrike">
     <meta name=application-name content="FAQ - Frequently Asked Questions | Airstrike">
@@ -13,41 +13,153 @@
     <meta itemprop=description
         content="
 Frequently Asked Questions (FAQ)
-Due to the large number of users Airstrike has, some questions are asked more commonly than others. To help address some of these questions, we have put together this FAQ.">
+To help answer the questions we hear most often, we have put together this FAQ.">
     <meta name=description
         content="
 Frequently Asked Questions (FAQ)
-Due to the large number of users Airstrike has, some questions are asked more commonly than others. To help address some of these questions, we have put together this FAQ.">
+To help answer the questions we hear most often, we have put together this FAQ.">
     <meta name=twitter:description
         content="
 Frequently Asked Questions (FAQ)
-Due to the large number of users Airstrike has, some questions are asked more commonly than others. To help address some of these questions, we have put together this FAQ.">
+To help answer the questions we hear most often, we have put together this FAQ.">
     <meta property="og:description"
         content="
 Frequently Asked Questions (FAQ)
-Due to the large number of users Airstrike has, some questions are asked more commonly than others. To help address some of these questions, we have put together this FAQ.">
+To help answer the questions we hear most often, we have put together this FAQ.">
     <meta name=keywords content="airstrike,faq,documentation,penetration testing,linux">
     <meta name=apple-mobile-web-app-status-bar-style content="black-translucent">
     <meta name=msapplication-navbutton-color content="#36f03d">
     <meta name=theme-color content="#36f03d">
     <meta name=language content="English">
     <meta property="og:locale" content="en_US">
-    <meta itemprop=image content="/images/airstrike-jet-logo-white-transperant.svg">
-    <meta property="og:image" content="/images/airstrike-jet-logo-white-transperant.svg">
-    <meta name=twitter:image content="/images/airstrike-jet-logo-white-transperant.svg">
-    <meta name=twitter:image:src content="/images/airstrike-jet-logo-white-transperant.svg">
+    <meta itemprop=image content="https://airstrike.dev/images/og-image.png">
+    <meta property="og:image" content="https://airstrike.dev/images/og-image.png">
+    <meta name=twitter:image content="https://airstrike.dev/images/og-image.png">
+    <meta name=twitter:image:src content="https://airstrike.dev/images/og-image.png">
     <meta property="og:updated_time" content=2025-01-01T00:00:00+0000>
     <meta name=twitter:site content="@airstrike">
-    <meta name=twitter:creator content="@airstrike">
+    <meta name=twitter:creator content="@airstrike"><meta name=twitter:card content=summary_large_image><meta property=og:type content=website>
     <link rel="icon" href="/images/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32"><link rel="apple-touch-icon" href="/images/apple-touch-icon.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap"><link rel="stylesheet" href="/themify/themify-icons.css">
     <link rel=sitemap type=application/xml title=Sitemap href=/sitemap.xml>
     <link rel=canonical href=/faq/ itemprop=url>
     <meta name=twitter:url content="/faq/">
-    <meta property="og:url" content="/faq/">
+    <meta property="og:url" content="https://airstrike.dev/faq/">
     <meta name=url content="/faq/">
     <link href="/style.min.css?ver=899b114f4c20a4c758879ed0c8706282" rel=stylesheet>
     <script>
         const $ = document.querySelector.bind(document), $$ = document.querySelectorAll.bind(document)
+    </script>
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is Airstrike?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Airstrike is a Flask + Socket.IO web interface that orchestrates Wi-Fi attack tooling (deauth, handshake cracking, Evil Twin) from your browser. It wraps reliable CLI utilities, exposes live Socket.IO logs, and stores captures per BSSID so you can run assessments without juggling multiple terminals."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Which attacks ship with this build?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The UI exposes the three most stable attacks: Deauthentication, Handshake Capture + Cracking (aircrack-ng + configurable wordlist), and Evil Twin (hostapd/dnsmasq, optional captive portal). Experimental modules were removed to keep the codebase lean."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What are the runtime requirements?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Python 3.10+, pip , root access, and a wireless adapter that supports monitor mode + injection. The following binaries must be in $PATH : airmon-ng , airodump-ng , aircrack-ng , iw , ip , ifconfig , hostapd , dnsmasq , iptables , and dnsspoof ."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I run Airstrike?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Create a virtualenv, install requirements.txt , then launch sudo python run.py . The entry point enforces sudo, exports environment variables, ensures /etc/hosts contains airstrike.local , and binds to 0.0.0.0:5000 . Browse to http://airstrike.local:5000 ."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where do I change defaults?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Global settings live in web/shared.py inside the config dict (interface, wordlist path, capture directory). Adjust them to match your adapter names or storage paths."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where are captures stored?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Each attack writes artifacts under captures/<BSSID> . The Results tab also streams Socket.IO logs so you can monitor progress in real time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why does Airstrike require root?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Wireless attacks rely on monitor mode, packet injection, and services such as hostapd. Running as root avoids silent failures and lets the orchestrator manipulate interfaces safely. run.py aborts if it detects non-root execution."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What if a binary is missing?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The attack log pane will show the missing command (e.g., hostapd ). Install it via your package manager and restart Airstrike. Until then the attack will not run."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "My adapter is stuck in monitor mode, what now?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use the Settings → Interface tools to return to managed mode or run utils/network_utils.set_managed_mode() . Always verify the adapter supports monitor mode/injection—Atheros or Ralink USB adapters are reliable."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I run Airstrike anywhere?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Airstrike is for lab use, red-team exercises, and engagements where you have explicit authorization. Using these attacks on unauthorized networks may violate law or policy."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I report a bug or request a feature?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Open an issue on GitHub with reproduction steps, adapter details, and relevant logs. Feature ideas should explain the problem you’re solving."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How can I contribute?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Send pull requests for documentation, attack improvements, or new UI features. See the contribution guidelines linked in our repo for coding standards and review flow."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where can I get help?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Start with this FAQ and the documentation . If you still need assistance, reach out via the channels on the contact page and include your Airstrike version, adapter model, and logs."
+      }
+    }
+  ]
+}
     </script>
 </head>
 
@@ -178,7 +290,7 @@ Due to the large number of users Airstrike has, some questions are asked more co
         <details class=card id=report-bug>
             <summary><a href=#report-bug><i class=ti-link></i></a> How do I report a bug or request a feature?</summary>
             <div>
-                <p>Open an issue on <a href=\"https://github.com/mahmoud-sadder/airstrike/issues\">GitHub</a> with
+                <p>Open an issue on <a href="https://github.com/mahmoud-sadder/airstrike/issues" rel="noopener" target="_blank">GitHub</a> with
                     reproduction steps, adapter details, and relevant logs. Feature ideas should explain the problem
                     you&rsquo;re solving.</p>
             </div>
@@ -193,8 +305,8 @@ Due to the large number of users Airstrike has, some questions are asked more co
         <details class=card id=support>
             <summary><a href=#support><i class=ti-link></i></a> Where can I get help?</summary>
             <div>
-                <p>Start with this FAQ and the <a href=/docs />documentation</a>. If you still need assistance, reach
-                    out via the channels on the <a href=/contact />contact page</a> and include your Airstrike version,
+                <p>Start with this FAQ and the <a href=/docs>documentation</a>. If you still need assistance, reach
+                    out via the channels on the <a href=/contact>contact page</a> and include your Airstrike version,
                     adapter model, and logs.</p>
             </div>
         </details>
@@ -226,7 +338,7 @@ Due to the large number of users Airstrike has, some questions are asked more co
         </div>
         <div>
             <img id="footer-logo" src="/images/airstrike-jet-logo-white-transperant.svg" alt="Airstrike jet logo" width="120" height="120" />
-            &copy; 2026 Airstrike. All rights reserved.
+            &copy; 2026 Airstrike. All rights reserved.<br><span class="footer-legal">For authorized security testing and education only.</span>
         </div>
     </div>
     <div class="darkmode-switch">

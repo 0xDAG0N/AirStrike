@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Air Strike | Advanced Wi-Fi Penetration Testing</title>
+    <title>Airstrike | Advanced Wi-Fi Penetration Testing</title>
     <meta name="description"
-        content="Air Strike is an open-source, Python-based Wi-Fi penetration testing toolkit that supports password cracking, Evil Twin, and deauthentication attacks.">
+        content="Airstrike is an open-source, Python-based Wi-Fi penetration testing toolkit that supports password cracking, Evil Twin, and deauthentication attacks.">
     <meta name="keywords"
         content="wifi penetration testing, ethical hacking, wireless security, python security tool, evil twin attack, deauthentication, handshake capture, airstrike, wifi hacking tool">
     <meta name="author" content="Airstrike Team">
@@ -20,18 +20,18 @@
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Airstrike">
-    <meta property="og:title" content="Air Strike | Advanced Wi-Fi Penetration Testing">
+    <meta property="og:title" content="Airstrike | Advanced Wi-Fi Penetration Testing">
     <meta property="og:description"
-        content="Air Strike is an open-source, Python-based Wi-Fi penetration testing toolkit that supports password cracking, Evil Twin, and deauthentication attacks.">
+        content="Airstrike is an open-source, Python-based Wi-Fi penetration testing toolkit that supports password cracking, Evil Twin, and deauthentication attacks.">
     <meta property="og:url" content="https://airstrike.dev/">
-    <meta property="og:image" content="https://airstrike.dev/images/airstrike-jet-logo-white-transperant.svg">
+    <meta property="og:image" content="https://airstrike.dev/images/og-image.png">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:site" content="@airstrike">
-    <meta name="twitter:title" content="Air Strike | Advanced Wi-Fi Penetration Testing">
+    <meta name="twitter:title" content="Airstrike | Advanced Wi-Fi Penetration Testing">
     <meta name="twitter:description" content="Python-based Wi-Fi penetration testing toolkit for ethical hackers.">
-    <meta name="twitter:image" content="https://airstrike.dev/images/airstrike-jet-logo-white-transperant.svg">
+    <meta name="twitter:image" content="https://airstrike.dev/images/og-image.png">
 
     <!-- Favicon -->
     <link rel="icon" href="/images/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32"><link rel="apple-touch-icon" href="/images/apple-touch-icon.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap"><link rel="stylesheet" href="/themify/themify-icons.css">
@@ -60,13 +60,37 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "VideoObject",
-      "name": "Air Strike | Advanced Wi-Fi Penetration Testing",
-      "description": "Air Strike is an open-source, Python-based Wi-Fi penetration testing toolkit that supports password cracking, Evil Twin, and deauthentication attacks.",
-      "thumbnailUrl": "https://airstrike.dev/images/airstrike-jet-logo-white-transperant.svg",
-      "uploadDate": "2026-02-01",
-      "duration": "PT0M30S",
-      "embedUrl": "https://www.youtube.com/embed/Xr3pgje8SO4"
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://airstrike.dev/#organization",
+          "name": "Airstrike",
+          "url": "https://airstrike.dev/",
+          "logo": "https://airstrike.dev/images/og-image.png",
+          "sameAs": ["https://github.com/mahmoud-sadder/airstrike"]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://airstrike.dev/#website",
+          "name": "Airstrike",
+          "url": "https://airstrike.dev/",
+          "publisher": { "@id": "https://airstrike.dev/#organization" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://airstrike.dev/#software",
+          "name": "Airstrike",
+          "description": "Airstrike is an open-source, Python-based Wi-Fi penetration testing toolkit with a browser-based control panel that supports password (WPA handshake) cracking, Evil Twin, and deauthentication attacks.",
+          "applicationCategory": "SecurityApplication",
+          "operatingSystem": "Linux",
+          "url": "https://airstrike.dev/",
+          "downloadUrl": "https://github.com/mahmoud-sadder/airstrike",
+          "softwareVersion": "0.0",
+          "author": { "@id": "https://airstrike.dev/#organization" },
+          "image": "https://airstrike.dev/images/og-image.png",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        }
+      ]
     }
     </script>
 </head>
@@ -115,18 +139,21 @@
                 </div>
                 <div>
                     <h1>A browser-based<br>Wi-Fi security toolkit</h1>
-                    <p>Air Strike is an open-source, Python-based Wi-Fi Penetration Testing tool supports many wireless
-                        security tests, such as Password Cracking, Evil-Twin and Deauthentication.</p>
+                    <p>Airstrike is an open-source, Python-based Wi-Fi penetration testing tool that runs on Linux and
+                        drives its wireless security tests&mdash;password (WPA handshake) cracking, Evil-Twin, and
+                        deauthentication&mdash;from a real-time browser dashboard.</p>
                 </div>
                 <div>
-                    <a id="download-button" class="btn"
-                        href="https://github.com/mahmoud-sadder/airstrike/archive/refs/tags/v0.0.zip">Download <i
+                    <a id="download-button" class="btn" href="/releases/">Download <i
                             class="ti-download">
                         </i>
                     </a>
                     <a id="documentation-link" class="btn" href="/docs/">Documentation <i class="ti-book">
                         </i>
                     </a>
+                    <p class="use-disclaimer">For authorized security testing and education only. You are responsible
+                        for complying with all applicable laws and for having explicit permission to test any network.
+                        <a href="/faq/">Learn more</a>.</p>
                 </div>
             </div>
         </div>
@@ -141,7 +168,7 @@
                 <h1>Built in the Open</h1>
             </div>
         </div>
-        <h3>Airstrike puts three battle-tested Wi-Fi attacks behind one clean, <strong>real-time browser interface</strong>.</h3>
+        <h3>Airstrike puts three core Wi-Fi attacks behind one clean, <strong>real-time browser interface</strong>.</h3>
         <ul>
             <li>
                 <a href="/features/">
@@ -152,7 +179,7 @@
             </li>
             <li>
                 <a href="/attacks/">
-                    <h4><i class="ti-target"></i>Battle-Tested Modules</h4>
+                    <h4><i class="ti-target"></i>Core Modules</h4>
                 </a>
                 <p>The <a href="/attacks/">attack suite</a> focuses on the three scenarios we rely on
                     most—Deauthentication, Handshake capture + cracking, and Evil Twin—keeping the workflow lean and
@@ -185,7 +212,7 @@
         <figure>
             <img class="notebook-frame" src="images/notebook.svg" alt="Generic laptop PC">
             <div class="notebook-video">
-                <iframe src="https://www.youtube.com/embed/Xr3pgje8SO4" title="Air Strike demonstration video"
+                <iframe src="https://www.youtube.com/embed/Xr3pgje8SO4" title="Airstrike demonstration video"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     allowfullscreen loading="lazy"></iframe>
             </div>
@@ -220,7 +247,7 @@
         </div>
         <div>
             <img id="footer-logo" src="/images/airstrike-jet-logo-white-transperant.svg" alt="Airstrike jet logo" width="120" height="120" />
-            &copy; 2026 Airstrike. All rights reserved.
+            &copy; 2026 Airstrike. All rights reserved.<br><span class="footer-legal">For authorized security testing and education only.</span>
         </div>
     </div>
     <div class="darkmode-switch">
