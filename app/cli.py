@@ -77,7 +77,12 @@ def main():
     print("=" * 60 + "\n")
 
     # Run the Flask app with SocketIO (production mode to avoid debugger spam).
-    socketio.run(app, debug=False, host=Config.HOST, port=Config.PORT)
+    # allow_unsafe_werkzeug=True bundles the Werkzeug server without eventlet/gevent, which
+    # Flask-SocketIO >= 5.3 otherwise refuses to start. Acceptable for this loopback-bound,
+    # single-operator lab tool (an SSH tunnel is the recommended remote-access path).
+    socketio.run(
+        app, debug=False, host=Config.HOST, port=Config.PORT, allow_unsafe_werkzeug=True
+    )
 
 
 if __name__ == "__main__":
