@@ -2,10 +2,10 @@
 
 import re
 
-from app.config import config
 from app.core.logging import logger
 from app.core.sudo import run_with_sudo
 from app.core.network_utils import run_scan
+from app.core.validation import ValidationError, validate_interface
 from app.state import stats
 
 
@@ -28,8 +28,14 @@ def check_interface_status(interface="wlan0"):
     }
 
     try:
+        interface = validate_interface(interface)
+    except ValidationError:
+        logger.error(f"Refusing to check invalid interface: {interface!r}")
+        return status
+
+    try:
         # Check if interface exists
-        success, output, _ = run_with_sudo(f"ip link show {interface}")
+        success, output, _ = run_with_sudo(["ip", "link", "show", interface])
         if success:
             status["exists"] = True
 
@@ -40,7 +46,7 @@ def check_interface_status(interface="wlan0"):
                 status["status"] = "DOWN"
 
             # Check if it's a wireless interface
-            success, output, _ = run_with_sudo(f"iwconfig {interface}")
+            success, output, _ = run_with_sudo(["iwconfig", interface])
             if success and "no wireless extensions" not in output.lower():
                 status["is_wireless"] = True
 
@@ -66,22 +72,28 @@ def scan_wifi_networks(interface="wlan0"):
         tuple: (list of networks, error message or None)
     """
     try:
+        interface = validate_interface(interface)
+    except ValidationError:
+        logger.error(f"Refusing to scan invalid interface: {interface!r}")
+        return [], "Invalid interface name"
+
+    try:
         logger.info(f"Scanning for WiFi networks on interface {interface}")
 
         # First check if the interface exists
-        success, output, error = run_with_sudo(f"ip link show {interface}")
+        success, output, error = run_with_sudo(["ip", "link", "show", interface])
         if not success:
             logger.error(f"Interface {interface} does not exist or cannot be accessed: {error}")
             return [], f"Interface {interface} not found or inaccessible"
 
         # Check if NetworkManager is managing the interface and might be causing conflicts
-        success, output, error = run_with_sudo("ps aux | grep NetworkManager")
+        success, output, error = run_with_sudo(["ps", "aux"])
         if success and "NetworkManager" in output:
             logger.warning("NetworkManager detected, may interfere with scanning")
 
             # Try to temporarily disable NetworkManager for this interface
             try:
-                run_with_sudo(f"nmcli device set {interface} managed no")
+                run_with_sudo(["nmcli", "device", "set", interface, "managed", "no"])
                 logger.info(f"Temporarily disabled NetworkManager for {interface}")
                 # Remember to re-enable it later
             except Exception as nm_err:
@@ -92,7 +104,7 @@ def scan_wifi_networks(interface="wlan0"):
 
         # Re-enable NetworkManager if we disabled it
         try:
-            run_with_sudo(f"nmcli device set {interface} managed yes")
+            run_with_sudo(["nmcli", "device", "set", interface, "managed", "yes"])
         except Exception:
             pass  # Ignore errors here
 
@@ -109,7 +121,7 @@ def scan_wifi_networks(interface="wlan0"):
 
         # Try to restore NetworkManager if needed
         try:
-            run_with_sudo(f"nmcli device set {interface} managed yes")
+            run_with_sudo(["nmcli", "device", "set", interface, "managed", "yes"])
         except Exception:
             pass  # Ignore errors here
 
