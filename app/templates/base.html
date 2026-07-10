@@ -44,8 +44,7 @@
         }
     </style>
     
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Fonts: system stack (no external CDN — the tool runs on air-gapped boxes) -->
     
     <!-- Core stylesheets -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -55,7 +54,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navigation.css') }}">
     
     <!-- External libraries -->
-    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/vendor/socket.io.min.js') }}"></script>
     
     <!-- Page-specific CSS -->
     {% block extra_css %}{% endblock %}
@@ -94,7 +93,7 @@
         </nav>
         
         <div class="container">
-            <div id="alerts-container">
+            <div id="alerts-container" role="status" aria-live="polite">
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
                         {% for category, message in messages %}

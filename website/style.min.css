@@ -20,11 +20,6 @@ footer #offsec-partnership {
 	--color-airstrike-purple: #f0d91e
 }
 
-[class^=ti-]::before,
-[class*=" ti-"]::before {
-	content: ' • '
-}
-
 * {
 	box-sizing: border-box;
 	outline: none;

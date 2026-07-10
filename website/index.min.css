@@ -7,7 +7,10 @@ section h1 {
 }
 
 header {
-	background-image: url(images/airstrike-home-banner.png);
+	background-image: url(images/airstrike-home-banner.jpg);
+	background-image: image-set(url("images/airstrike-home-banner.webp") type("image/webp"), url("images/airstrike-home-banner.jpg") type("image/jpeg"));
+	background-size: cover;
+	background-position: center;
 	box-shadow: 0 0 20px rgba(0, 0, 0, .5), inset 0 -8px rgba(0, 0, 0, .3);
 	min-height: 100vh
 }
@@ -509,7 +512,6 @@ section div>p {
 }
 
 #airstrike-everywhere {
-	background: url(https://www.airstrike.org/images/neon-background.svg);
 	background-size: cover;
 	background-position: 50%;
 	text-shadow: 0 1px 5px rgba(0, 0, 0, .2)

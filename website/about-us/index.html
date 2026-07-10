@@ -31,7 +31,7 @@
     <meta property="og:updated_time" content=2025-09-03T13:59:04+0100>
     <meta name=twitter:site content="@airstrike">
     <meta name=twitter:creator content="@airstrike">
-    <link rel="icon" type="image/x-icon" href="/images/airstrike-jet-logo-black-transperant.png">
+    <link rel="icon" href="/images/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32"><link rel="apple-touch-icon" href="/images/apple-touch-icon.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap"><link rel="stylesheet" href="/themify/themify-icons.css">
     <link rel=sitemap type=application/xml title=Sitemap href=/sitemap.xml>
     <link rel=canonical href=/about-us/ itemprop=url>
     <meta name=twitter:url content="/about-us/">
@@ -44,7 +44,40 @@
 </head>
 
 <body class="dark-theme">
-    <div data-template="site-header"></div>
+    <header class="bg-cover">
+    <nav class="container">
+        <a id="logo" href="/" style="background-image:url(/images/airstrike-logo-white.svg)" aria-label="Airstrike home"></a>
+        <ul id="navigation">
+            <li><a href="/releases/">Get Airstrike</a></li>
+            <li class="dropdown-menu">
+                <span tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Documentation <i class="ti-angle-down" aria-hidden="true"></i></span>
+                <div>
+                    <a href="/docs/">Documentation Pages</a>
+                    <a href="/attacks/">Attacks Documentation</a>
+                    <a href="/faq/">Frequently Asked Questions</a>
+                    <a href="https://github.com/mahmoud-sadder/airstrike/issues" rel="noopener" target="_blank">Known Issues</a>
+                </div>
+            </li>
+            <li class="dropdown-menu">
+                <span tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">Developers <i class="ti-angle-down" aria-hidden="true"></i></span>
+                <div>
+                    <a href="https://github.com/mahmoud-sadder/airstrike" rel="noopener" target="_blank">Git Repositories</a>
+                </div>
+            </li>
+            <li class="dropdown-menu">
+                <span tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">About <i class="ti-angle-down" aria-hidden="true"></i></span>
+                <div>
+                    <a href="/features/">Airstrike Overview</a>
+                    <a href="/about-us/">Meet The Airstrike Team</a>
+                    <a href="/partnerships/">Partnerships</a>
+                    <a href="/releases/">Release Notes</a>
+                    <a href="/contact/">Contact Us</a>
+                </div>
+            </li>
+        </ul>
+        <button title="show menu" aria-label="Toggle navigation menu"><div></div><div></div><div></div></button>
+    </nav>
+</header>
     <section id=content>
         <h1 id=meet-the-airstrike-team>Meet The Airstrike Team</h1>
         <h2 id=airstrikes-founders>Airstrike&rsquo;s Founders</h2>
@@ -202,11 +235,46 @@
             }
         </style>
     </section>
-    <div data-template="site-footer"></div>
+    <footer>
+    <div class="container footer-nav">
+        <div>
+            <h4>General</h4>
+            <a href="/">Home</a>
+            <a href="/releases/">Get Airstrike</a>
+        </div>
+        <div>
+            <h4>Documentation</h4>
+            <a href="/docs/">Documentation Pages</a>
+            <a href="/attacks/">Attacks Documentation</a>
+            <a href="/faq/">Frequently Asked Questions</a>
+            <a href="https://github.com/mahmoud-sadder/airstrike/issues" rel="noopener" target="_blank">Known Issues</a>
+        </div>
+        <div>
+            <h4>Developers</h4>
+            <a href="https://github.com/mahmoud-sadder/airstrike" rel="noopener" target="_blank">Git Repositories</a>
+        </div>
+        <div>
+            <h4>About</h4>
+            <a href="/features/">Airstrike Overview</a>
+            <a href="/about-us/">Meet The Airstrike Team</a>
+            <a href="/partnerships/">Partnerships</a>
+            <a href="/contact/">Contact Us</a>
+        </div>
+        <div>
+            <img id="footer-logo" src="/images/airstrike-jet-logo-white-transperant.svg" alt="Airstrike jet logo" width="120" height="120" />
+            &copy; 2026 Airstrike. All rights reserved.
+        </div>
+    </div>
+    <div class="darkmode-switch">
+        LIGHT
+        <label class="switch" title="Toggle light and dark theme">
+            <input type="checkbox" name="toggle-darkmode" aria-label="Toggle light and dark theme" checked>
+            <div></div>
+        </label>
+        DARK
+    </div>
+</footer>
     <script src="/script.min.js?ver=3dafc40a0d8cbf1d4de2fe8a08595670"></script>
-    <script>
-            (function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'999d86496af1499e',t:'MTc2MjM1ODAxMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();
-    </script>
-</body>
+    </body>
 
 </html>
