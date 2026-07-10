@@ -40,7 +40,7 @@ sudo python run.py
 The runner enforces sudo, exports the required environment variables, and ensures `/etc/hosts` contains `127.0.0.1 airstrike.local`.
 The server binds to **`127.0.0.1:5000` (loopback only)** by default; browse to `http://airstrike.local:5000` or `http://127.0.0.1:5000`. (`sudo airstrike` runs the same thing via the console script.)
 
-On first launch AirStrike prints a generated **login password** — set `AIRSTRIKE_PASSWORD` to choose your own, and `AIRSTRIKE_SECRET_KEY` to keep sessions across restarts. Sign in, then use the **Scan** tab to discover networks, select one, and switch to **Attack**. You must confirm authorization before an attack starts, and every launch/stop is written to `airstrike-audit.log`. Live logs and capture summaries are under **Results**.
+On the default loopback bind there is **no login** — for a single-operator box the loopback bind *is* the access control, so you go straight to the dashboard. (A login gate turns on automatically if you expose the panel with `AIRSTRIKE_BIND_ALL=1`; set `AIRSTRIKE_PASSWORD` then, or force auth on/off with `AIRSTRIKE_REQUIRE_AUTH=1` / `AIRSTRIKE_DISABLE_AUTH=1`.) Use the **Scan** tab to discover networks, select one, and switch to **Attack**. You still confirm authorization before an attack starts, and every launch/stop is written to `airstrike-audit.log`. Live logs and capture summaries are under **Results**.
 
 To reach it from another machine, prefer an SSH tunnel (`ssh -L 5000:127.0.0.1:5000 <host>`). Exposing it on all interfaces (`AIRSTRIKE_BIND_ALL=1`) serves the panel over plaintext HTTP and is discouraged — see [THREAT_MODEL.md](THREAT_MODEL.md).
 

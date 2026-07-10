@@ -40,6 +40,22 @@ _WINDOW = 300  # seconds to accumulate failures over
 _LOCK = 300    # seconds locked once _MAX_FAILS is reached
 
 
+def auth_required():
+    """Whether to enforce the login gate.
+
+    OFF by default: the app binds to loopback and is single-operator, so the loopback bind is
+    itself the access control and a password only adds friction. It turns ON automatically
+    when the panel is exposed to the network (``AIRSTRIKE_BIND_ALL=1``) or when explicitly
+    requested (``AIRSTRIKE_REQUIRE_AUTH=1``). ``AIRSTRIKE_DISABLE_AUTH=1`` forces it off even
+    when exposed (an operator's explicit choice).
+    """
+    if os.environ.get("AIRSTRIKE_DISABLE_AUTH") == "1":
+        return False
+    if os.environ.get("AIRSTRIKE_REQUIRE_AUTH") == "1":
+        return True
+    return os.environ.get("AIRSTRIKE_BIND_ALL") == "1"
+
+
 def resolve_password():
     """Return the operator password: ``AIRSTRIKE_PASSWORD`` or a generated one (shown once)."""
     pw = os.environ.get("AIRSTRIKE_PASSWORD")

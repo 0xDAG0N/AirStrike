@@ -30,8 +30,10 @@ capture/crack, evil-twin AP). Single operator, single host, Linux + root only.
 - **Input validation** (`app/core/validation.py`) on every value that reaches the OS/engine:
   BSSID (MAC regex), interface (anchored, no leading `-`), channel, SSID (control-char/length),
   and output paths (traversal-jailed).
-- **Authentication** — a session login gates every route (`AIRSTRIKE_PASSWORD` or a generated
-  one shown once); brute-force lockout per IP; session regenerated on login.
+- **Authentication** — a session login gate that is **off on the loopback default** (there the
+  bind itself is the access control for a single operator) and turns **on automatically when the
+  panel is network-exposed** (`AIRSTRIKE_BIND_ALL=1`, or `AIRSTRIKE_REQUIRE_AUTH=1`). When on:
+  `AIRSTRIKE_PASSWORD` or a generated one, per-IP brute-force lockout, session regeneration.
 - **CSRF** — per-session token on all state-changing requests, plus a same-origin check and
   `SameSite=Strict` cookies, so cross-site pages can't drive the panel.
 - **Loopback by default** — binds `127.0.0.1`; exposing to the network is an explicit

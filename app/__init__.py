@@ -52,12 +52,18 @@ def create_app(config_object=None):
     # --- blueprints (single registration; resolves the /attack_status collision) ---
     register_blueprints(app)
 
-    # --- auth: login gate + CSRF on every route (P0 · S3) ---
-    from app.blueprints.auth import auth_bp
-    from app.core.auth import init_auth, resolve_password
+    # --- auth: login gate + CSRF, enforced ONLY when the panel is network-exposed ---
+    # On the default loopback bind (single operator) the login is pure friction, so it's off.
+    # It turns on automatically under AIRSTRIKE_BIND_ALL=1 (or AIRSTRIKE_REQUIRE_AUTH=1).
+    from app.core.auth import init_auth, resolve_password, auth_required
 
-    app.register_blueprint(auth_bp)
-    init_auth(app, resolve_password())
+    # Always provide csrf_token() so templates render whether or not the gate is active.
+    app.jinja_env.globals["csrf_token"] = lambda: ""
+    if auth_required():
+        from app.blueprints.auth import auth_bp
+
+        app.register_blueprint(auth_bp)
+        init_auth(app, resolve_password())  # replaces the stub csrf_token + installs the guard
 
     # --- error handlers (were in web/app.py) ---
     @app.errorhandler(404)
