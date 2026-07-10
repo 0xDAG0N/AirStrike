@@ -45,6 +45,18 @@ def test_login_blocks_open_redirect(anon_client):
     assert "evil.com" not in resp.headers["Location"]
 
 
+def test_auth_off_by_default_allows_direct_access(monkeypatch):
+    # Loopback single-operator default: no login gate, tool is directly usable.
+    monkeypatch.setenv("AIRSTRIKE_DISABLE_AUTH", "1")
+    from app import create_app
+    from app.config import TestConfig
+
+    app = create_app(TestConfig)
+    c = app.test_client()
+    assert c.get("/dashboard_stats").status_code == 200  # no session needed
+    assert c.get("/login").status_code == 404            # login route not even registered
+
+
 def test_cross_origin_request_rejected(client):
     # Authenticated, but the Origin header is a different site → blocked.
     resp = client.get("/dashboard_stats", headers={"Origin": "http://evil.example"})

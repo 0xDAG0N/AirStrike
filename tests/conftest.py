@@ -12,6 +12,8 @@ import pytest
 # Deterministic auth for the suite; must be set before create_app() reads it.
 os.environ.setdefault("AIRSTRIKE_SKIP_ROOT_CHECK", "1")
 os.environ.setdefault("AIRSTRIKE_PASSWORD", "test-pass")
+# Auth is off by default now (loopback); force it on so the auth/CSRF suite exercises the gate.
+os.environ.setdefault("AIRSTRIKE_REQUIRE_AUTH", "1")
 
 from app import create_app
 from app.config import TestConfig
