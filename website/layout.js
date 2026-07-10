@@ -84,6 +84,14 @@
             &copy; Airstrike Services Limited 2025. All rights reserved.
         </div>
     </div>
+    <div class="darkmode-switch">
+        LIGHT
+        <label class="switch" title="Toggle light and dark theme">
+            <input type="checkbox" name="toggle-darkmode" aria-label="Toggle light and dark theme" checked>
+            <div></div>
+        </label>
+        DARK
+    </div>
 </footer>`;
 const collectHeaderTargets = () => {
         const explicitPlaceholders = [...document.querySelectorAll('[data-template="site-header"]')];
