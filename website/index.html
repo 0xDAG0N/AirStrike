@@ -34,7 +34,7 @@
     <meta name="twitter:image" content="https://airstrike.dev/images/og-image.png">
 
     <!-- Favicon -->
-    <link rel="icon" href="/images/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32"><link rel="apple-touch-icon" href="/images/apple-touch-icon.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap"><link rel="stylesheet" href="/themify/themify-icons.css">
+    <link rel="icon" href="/images/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32"><link rel="apple-touch-icon" href="/images/apple-touch-icon.png"><link rel="preload" as="image" href="/images/airstrike-home-banner.webp" type="image/webp" fetchpriority="high"><link rel="preload" as="image" href="/images/airstrike-jet-dragon-icon.webp" type="image/webp"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap"></noscript><link rel="stylesheet" href="/themify/themify-icons.css">
     <link rel="stylesheet" href="/style.min.css?ver=899b114f4c20a4c758879ed0c8706282">
     <link rel="stylesheet" href="/index.min.css?ver=20241118a">
     <style>
@@ -210,11 +210,13 @@
             </li>
         </ul>
         <figure>
-            <img class="notebook-frame" src="images/notebook.svg" alt="Generic laptop PC">
+            <img class="notebook-frame" src="images/notebook.svg" alt="Airstrike control panel on a laptop" width="1340" height="800" loading="lazy" decoding="async">
             <div class="notebook-video">
-                <iframe src="https://www.youtube.com/embed/Xr3pgje8SO4" title="Airstrike demonstration video"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowfullscreen loading="lazy"></iframe>
+                <button type="button" class="yt-facade" data-yt-id="Xr3pgje8SO4"
+                    aria-label="Play the Airstrike demonstration video"
+                    style="background-image:url(/images/video-thumb.webp)">
+                    <span class="yt-facade__play" aria-hidden="true"></span>
+                </button>
             </div>
         </figure>
     </section>

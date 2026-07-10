@@ -31,7 +31,7 @@
     <meta property="og:updated_time" content=2025-11-13T18:05:41Z>
     <meta name=twitter:site content="@airstrike">
     <meta name=twitter:creator content="@airstrike"><meta name=twitter:card content=summary_large_image><meta property=og:type content=website>
-    <link rel="icon" href="/images/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32"><link rel="apple-touch-icon" href="/images/apple-touch-icon.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap"><link rel="stylesheet" href="/themify/themify-icons.css">
+    <link rel="icon" href="/images/favicon.ico" sizes="any"><link rel="icon" type="image/png" href="/images/favicon-32.png" sizes="32x32"><link rel="apple-touch-icon" href="/images/apple-touch-icon.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap" media="print" onload="this.media='all'"><noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700&display=swap"></noscript><link rel="stylesheet" href="/themify/themify-icons.css">
     <link rel=sitemap type=application/xml title=Sitemap href=/sitemap.xml>
     <link rel=canonical href=/releases/ itemprop=url>
     <meta name=twitter:url content="/releases/">
@@ -152,8 +152,9 @@
             margin-top: 48px;
             padding: 32px;
             border-radius: 24px;
-            background: #fff;
-            box-shadow: 0 15px 30px rgba(6, 9, 16, .08)
+            background: var(--white-color);
+            color: var(--text-color);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, .18)
         }
 
         .release-notes h2,
@@ -181,8 +182,8 @@
         .release-summary-grid div {
             padding: 16px;
             border-radius: 18px;
-            background: #f5f7fb;
-            border: 1px solid #e2e6f5
+            background: rgba(127, 127, 127, .08);
+            border: 1px solid rgba(127, 127, 127, .2)
         }
 
         .release-summary-grid span {
@@ -191,19 +192,19 @@
             text-transform: uppercase;
             letter-spacing: .2em;
             margin-bottom: 6px;
-            color: #5b6074
+            color: var(--text-color)
         }
 
         .release-summary-grid strong {
             font-size: 1.2rem;
-            color: #111528
+            color: var(--text-color-dark)
         }
 
         .release-entry {
             display: flex;
             gap: 20px;
             padding: 20px 0;
-            border-bottom: 1px solid #e6e8f2
+            border-bottom: 1px solid rgba(127, 127, 127, .2)
         }
 
         .release-entry:last-child {
@@ -212,7 +213,7 @@
 
         .release-entry time {
             font-weight: 600;
-            color: #0a1533;
+            color: var(--text-color-dark);
             min-width: 140px
         }
 
@@ -223,7 +224,7 @@
         .release-archive__cta {
             margin-top: 20px;
             font-size: .95rem;
-            color: #43485b
+            color: var(--text-color)
         }
 
         .release-follow ol {
@@ -246,10 +247,10 @@
         .release-follow__links a {
             padding: 10px 20px;
             border-radius: 999px;
-            border: 1px solid #d1d7f4;
+            border: 1px solid rgba(127, 127, 127, .3);
             font-weight: 600;
             text-decoration: none;
-            color: #0c1a3b
+            color: var(--text-color-dark)
         }
 
         @media (max-width:720px) {
