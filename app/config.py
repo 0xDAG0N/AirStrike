@@ -41,7 +41,7 @@ class Config:
 
     DEBUG = False
     HOST = _bind_host()
-    PORT = 5000
+    PORT = int(os.environ.get("AIRSTRIKE_PORT", "5000"))
 
 
 class TestConfig(Config):

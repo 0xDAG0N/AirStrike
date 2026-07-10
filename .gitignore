@@ -178,3 +178,6 @@ cython_debug/
 
 # runtime audit trail
 airstrike-audit.log
+
+# local dev tooling
+.claude/

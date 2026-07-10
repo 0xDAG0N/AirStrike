@@ -1,7 +1,8 @@
 /**
  * State Management Module
- * 
- * Provides a centralized state store with subscription capabilities
+ *
+ * A small in-memory store for the current page's selection, mirrored to sessionStorage so
+ * it survives full-page navigations.
  */
 
 // Define initial state
@@ -15,24 +16,20 @@ const initialState = {
 // Current state
 let state = { ...initialState };
 
-// Subscribers to state changes
-const subscribers = [];
-
 /**
  * Get the current state
- * @returns {Object} The current state
+ * @returns {Object} A shallow copy of the current state
  */
 export function getState() {
     return { ...state };
 }
 
 /**
- * Update the state
- * @param {Object} newState - The new state to merge with current state
+ * Merge new values into the state
+ * @param {Object} newState - The values to merge
  */
 export function updateState(newState) {
     state = { ...state, ...newState };
-    notifySubscribers();
 }
 
 /**
@@ -40,31 +37,6 @@ export function updateState(newState) {
  */
 export function resetState() {
     state = { ...initialState };
-    notifySubscribers();
-}
-
-/**
- * Subscribe to state changes
- * @param {Function} callback - Function to call when state changes
- * @returns {Function} Unsubscribe function
- */
-export function subscribe(callback) {
-    subscribers.push(callback);
-    
-    // Return unsubscribe function
-    return () => {
-        const index = subscribers.indexOf(callback);
-        if (index !== -1) {
-            subscribers.splice(index, 1);
-        }
-    };
-}
-
-/**
- * Notify all subscribers of state changes
- */
-function notifySubscribers() {
-    subscribers.forEach(callback => callback(state));
 }
 
 /**
@@ -76,8 +48,8 @@ export function loadSavedState() {
         if (savedNetwork) {
             updateState({ selectedNetwork: JSON.parse(savedNetwork) });
         }
-    } catch (error) {
-        console.error('Error loading saved state:', error);
+    } catch (err) {
+        console.error('Error loading saved state:', err);
     }
 }
 
@@ -89,8 +61,8 @@ export function saveNetworkSelection(network) {
     try {
         sessionStorage.setItem('selectedNetwork', JSON.stringify(network));
         updateState({ selectedNetwork: network });
-    } catch (error) {
-        console.error('Error saving network selection:', error);
+    } catch (err) {
+        console.error('Error saving network selection:', err);
     }
 }
 
@@ -102,8 +74,8 @@ export function getStoredNetwork() {
     try {
         const storedNetwork = sessionStorage.getItem('selectedNetwork');
         return storedNetwork ? JSON.parse(storedNetwork) : null;
-    } catch (error) {
-        console.error('Error retrieving stored network:', error);
+    } catch (err) {
+        console.error('Error retrieving stored network:', err);
         return null;
     }
 }
@@ -130,4 +102,4 @@ export function setAttackRunning(isRunning) {
  */
 export function updateAttackLog(log) {
     updateState({ attackLog: log });
-} 
+}
