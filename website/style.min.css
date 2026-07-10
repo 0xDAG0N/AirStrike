@@ -22,7 +22,6 @@ footer #offsec-partnership {
 
 * {
 	box-sizing: border-box;
-	outline: none;
 	-webkit-tap-highlight-color: transparent;
 	-webkit-touch-callout: none;
 	text-size-adjust: none
@@ -211,12 +210,7 @@ a,
 a:hover,
 a:focus {
 	text-decoration: none;
-	color: var(--primary-color)
-}
-
-a:hover,
-a:focus {
-	color: var(--primary-color)
+	color: light-dark(#0b6b14, var(--primary-color))
 }
 
 a,
@@ -225,10 +219,15 @@ select {
 	cursor: pointer
 }
 
-a:focus,
-button:focus,
-select:focus {
-	outline: 0
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible {
+	outline: 2px solid var(--primary-color);
+	outline-offset: 2px;
+	border-radius: 3px
 }
 
 hr {
@@ -376,7 +375,7 @@ a.card:hover {
 	font-weight: 700;
 	border: 0;
 	background: var(--primary-color);
-	color: #fff !important;
+	color: #0b1f0e !important;
 	box-shadow: inset 0 -6px rgba(0, 0, 0, .2);
 	text-align: center;
 	transition: box-shadow .1s ease
@@ -397,7 +396,15 @@ a.card:hover {
 }
 
 .switch input {
-	display: none
+	position: absolute;
+	opacity: 0;
+	width: 1px;
+	height: 1px
+}
+
+.switch input:focus-visible+div {
+	outline: 2px solid var(--primary-color);
+	outline-offset: 2px
 }
 
 .switch input+div {
@@ -566,7 +573,8 @@ header nav.show-menu #logo:empty {
 		transition-duration: 0s
 	}
 
-	#navigation .dropdown-menu:hover>span {
+	#navigation .dropdown-menu:hover>span,
+	#navigation .dropdown-menu:focus-within>span {
 		transition-duration: .3s;
 		box-shadow: -4px -4px 15px -4px rgba(127, 127, 127, .2);
 		border-color: rgba(0, 0, 0, .1);
@@ -575,7 +583,8 @@ header nav.show-menu #logo:empty {
 		text-shadow: none
 	}
 
-	body.dark-theme #navigation .dropdown-menu:hover>span {
+	body.dark-theme #navigation .dropdown-menu:hover>span,
+	body.dark-theme #navigation .dropdown-menu:focus-within>span {
 		background: var(--body-color)
 	}
 
@@ -608,7 +617,8 @@ header nav.show-menu #logo:empty {
 		text-align: right
 	}
 
-	#navigation .dropdown-menu:hover>span+div {
+	#navigation .dropdown-menu:hover>span+div,
+	#navigation .dropdown-menu:focus-within>span+div {
 		visibility: visible;
 		opacity: 1
 	}
@@ -704,6 +714,7 @@ nav.show-menu button div:last-child {
 	}
 
 	#navigation .dropdown-menu:hover div,
+	#navigation .dropdown-menu:focus-within div,
 	#navigation .dropdown-menu.open div {
 		max-height: 300px
 	}
@@ -739,7 +750,7 @@ header.bg-cover {
 }
 
 header.bg-cover::before {
-	background: var(--primary-color)
+	background: var(--white-color)
 }
 
 @media(min-width:1100px) {
@@ -1371,3 +1382,17 @@ footer #offsec-partnership a {
 .language-console .language-bash {
 	color: #fff
 }
+
+
+@media(prefers-reduced-motion:reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: .001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: .001ms !important;
+		scroll-behavior: auto !important
+	}
+}
+
+.footer-legal{font-size:12px;opacity:.7;display:inline-block;margin-top:6px}
