@@ -16,6 +16,12 @@ import subprocess
 from app.config import config
 from app.core.logging import logger  # noqa: F401 (kept for parity / future use)
 from app.core.network_utils import set_monitor_mode, set_managed_mode
+from app.core.validation import (
+    validate_bssid,
+    validate_channel,
+    validate_essid,
+    validate_interface,
+)
 from app.engine.deauth_attack import deauth_worker, deauth_worker_for_handshake
 from app.engine.capture_attack import capture_worker
 from app.engine.evil_twin import (
@@ -41,10 +47,11 @@ def add_log_message(message):
 
 def launch_deauth_attack(network, attack_config):
     """Launch a deauthentication attack against the specified network."""
-    # Extract parameters
-    bssid = network["bssid"]
-    channel = int(network["channel"])
-    client = attack_config.get("client", "FF:FF:FF:FF:FF:FF")
+    # Validate/whitelist every externally supplied value before it reaches a subprocess.
+    bssid = validate_bssid(network["bssid"])
+    channel = validate_channel(network["channel"])
+    client = validate_bssid(attack_config.get("client", "FF:FF:FF:FF:FF:FF"))
+    interface = validate_interface(config["interface"])
     count = attack_config.get("count", 10)
     interval = attack_config.get("interval", 0.1)
 
@@ -56,13 +63,13 @@ def launch_deauth_attack(network, attack_config):
 
     # Set monitor mode using subprocess and sudo
     try:
-        add_log_message(f"Setting {config['interface']} to monitor mode...")
-        subprocess.run(["sudo", "ip", "link", "set", config["interface"], "down"], check=True)
+        add_log_message(f"Setting {interface} to monitor mode...")
+        subprocess.run(["sudo", "ip", "link", "set", interface, "down"], check=True)
         subprocess.run(
-            ["sudo", "iw", "dev", config["interface"], "set", "type", "monitor"], check=True
+            ["sudo", "iw", "dev", interface, "set", "type", "monitor"], check=True
         )
-        subprocess.run(["sudo", "ip", "link", "set", config["interface"], "up"], check=True)
-        add_log_message(f"Interface {config['interface']} set to monitor mode")
+        subprocess.run(["sudo", "ip", "link", "set", interface, "up"], check=True)
+        add_log_message(f"Interface {interface} set to monitor mode")
     except subprocess.CalledProcessError as e:
         add_log_message(f"Error setting monitor mode: {e}")
         raise
@@ -71,7 +78,7 @@ def launch_deauth_attack(network, attack_config):
     try:
         add_log_message(f"Setting channel to {channel}...")
         subprocess.run(
-            ["sudo", "iw", "dev", config["interface"], "set", "channel", str(channel)], check=True
+            ["sudo", "iw", "dev", interface, "set", "channel", str(channel)], check=True
         )
         add_log_message(f"Channel set to {channel}")
     except subprocess.CalledProcessError as e:
@@ -79,18 +86,18 @@ def launch_deauth_attack(network, attack_config):
         # Try with iwconfig as fallback
         try:
             subprocess.run(
-                ["sudo", "iwconfig", config["interface"], "channel", str(channel)], check=True
+                ["sudo", "iwconfig", interface, "channel", str(channel)], check=True
             )
             add_log_message(f"Channel set to {channel} (using iwconfig)")
         except subprocess.CalledProcessError as e2:
             add_log_message(f"Error setting channel with iwconfig: {e2}")
-            set_managed_mode(config["interface"])
+            set_managed_mode(interface)
             raise
 
     # Start deauth thread
     deauth_thread = threading.Thread(
         target=deauth_worker,
-        args=(bssid, client, config["interface"], count, interval, attack_state["stop_event"]),
+        args=(bssid, client, interface, count, interval, attack_state["stop_event"]),
         daemon=True,
     )
 
@@ -102,9 +109,10 @@ def launch_deauth_attack(network, attack_config):
 
 def launch_handshake_attack(network, attack_config):
     """Launch a handshake capture attack against the specified network."""
-    # Extract parameters
-    bssid = network["bssid"]
-    channel = int(network["channel"])
+    # Validate/whitelist every externally supplied value before it reaches a subprocess.
+    bssid = validate_bssid(network["bssid"])
+    channel = validate_channel(network["channel"])
+    interface = validate_interface(config["interface"])
     duration = attack_config.get("duration", 5)
     wordlist = attack_config.get("wordlist", config["wordlist"])
 
@@ -115,8 +123,8 @@ def launch_handshake_attack(network, attack_config):
     cap_file = os.path.join(output_dir, "capture-01.cap")
 
     # Set monitor mode
-    set_monitor_mode(config["interface"])
-    add_log_message(f"Interface {config['interface']} set to monitor mode")
+    set_monitor_mode(interface)
+    add_log_message(f"Interface {interface} set to monitor mode")
     update_attack_progress(10)
 
     # Start capture thread (inject the state-aware log sink -> no socket emit, as before)
@@ -125,7 +133,7 @@ def launch_handshake_attack(network, attack_config):
         args=(
             bssid,
             channel,
-            config["interface"],
+            interface,
             duration,
             os.path.join(output_dir, "capture"),
             cap_file,
@@ -142,7 +150,7 @@ def launch_handshake_attack(network, attack_config):
         args=(
             bssid,
             "FF:FF:FF:FF:FF:FF",
-            config["interface"],
+            interface,
             10,
             0.1,
             attack_state["stop_event"],
@@ -168,11 +176,12 @@ def launch_handshake_attack(network, attack_config):
 
 def launch_evil_twin_attack(network, attack_config):
     """Launch an evil twin attack against the specified network."""
-    # Extract parameters
-    bssid = network["bssid"]  # noqa: F841 (kept for parity with original)
-    ssid = network["essid"]
-    # Always coerce to int — a raw string must never reach hostapd.conf (config injection).
-    channel = int(attack_config.get("channel", network["channel"]))
+    # Validate/whitelist every externally supplied value before it reaches a subprocess or
+    # is written into a generated hostapd/dnsmasq config file.
+    bssid = validate_bssid(network["bssid"])  # noqa: F841 (kept for parity with original)
+    ssid = validate_essid(network["essid"])
+    channel = validate_channel(attack_config.get("channel", network["channel"]))
+    interface = validate_interface(config["interface"])
     captive_portal = attack_config.get("captive_portal", False)
 
     # Create output directory
@@ -181,17 +190,17 @@ def launch_evil_twin_attack(network, attack_config):
     os.makedirs(output_dir, exist_ok=True)
 
     # Set managed mode
-    set_managed_mode(config["interface"])
-    add_log_message(f"Interface {config['interface']} set to managed mode")
+    set_managed_mode(interface)
+    add_log_message(f"Interface {interface} set to managed mode")
     update_attack_progress(10)
 
     # Create config files
-    hostapd_conf = create_hostapd_config(config["interface"], ssid, channel, output_dir)
-    dnsmasq_conf = create_dnsmasq_config(config["interface"], output_dir)
+    hostapd_conf = create_hostapd_config(interface, ssid, channel, output_dir)
+    dnsmasq_conf = create_dnsmasq_config(interface, output_dir)
 
     if hostapd_conf and dnsmasq_conf:
         # Setup network
-        setup_fake_ap_network(config["interface"])
+        setup_fake_ap_network(interface)
         add_log_message("Fake AP network setup complete")
         update_attack_progress(30)
 
@@ -226,36 +235,54 @@ def launch_evil_twin_attack(network, attack_config):
         raise Exception("Failed to create required configuration files")
 
 
-def _stream_process(name, argv, stop_event):
-    """Run a long-lived process from an argv list (no shell) and stream output to the log."""
-    process = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
+def _terminate(process):
+    """Stop a child process cleanly, escalating to kill if it ignores SIGTERM."""
+    if process.poll() is not None:
+        return
+    process.terminate()
     try:
-        while not stop_event.is_set():
-            line = process.stdout.readline()
-            if line:
-                add_log_message(f"[{name}] {line.strip()}")
-            elif process.poll() is not None:
-                break
-            else:
-                time.sleep(0.1)
-    finally:
-        if process.poll() is None:
-            process.terminate()
+        process.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        process.kill()
 
 
 def run_hostapd(config_file, stop_event):
-    """Run hostapd with the specified configuration file (argv, no shell)."""
+    """Run hostapd with the specified configuration file (argv exec, no shell)."""
     try:
         add_log_message(f"Starting hostapd with config: {config_file}")
-        _stream_process("hostapd", ["hostapd", config_file], stop_event)
+        process = subprocess.Popen(
+            ["hostapd", config_file],
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+
+        while not stop_event.is_set():
+            line = process.stdout.readline()
+            if line:
+                add_log_message(f"[hostapd] {line.strip()}")
+            time.sleep(0.1)
+
+        _terminate(process)
     except Exception as e:
         add_log_message(f"Error in hostapd: {e}")
 
 
 def run_dnsmasq(config_file, stop_event):
-    """Run dnsmasq with the specified configuration file (argv, no shell)."""
+    """Run dnsmasq with the specified configuration file (argv exec, no shell)."""
     try:
         add_log_message(f"Starting dnsmasq with config: {config_file}")
-        _stream_process("dnsmasq", ["dnsmasq", "-C", config_file, "-d"], stop_event)
+        process = subprocess.Popen(
+            ["dnsmasq", "-C", config_file, "-d"],
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+
+        while not stop_event.is_set():
+            line = process.stdout.readline()
+            if line:
+                add_log_message(f"[dnsmasq] {line.strip()}")
+            time.sleep(0.1)
+
+        _terminate(process)
     except Exception as e:
         add_log_message(f"Error in dnsmasq: {e}")
