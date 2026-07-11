@@ -399,7 +399,8 @@ section div>p {
 
 @media(max-width:760px) {
 	#airstrike-highlights h3 {
-		display: none
+		font-size: 17px;
+		margin: 4px 0 10px
 	}
 
 	#airstrike-highlights ul,
@@ -794,3 +795,7 @@ section div>p {
 .yt-facade__play{width:68px;height:48px;border-radius:14px;background:rgba(0,0,0,.65);position:relative;transition:background .2s,transform .2s}
 .yt-facade:hover .yt-facade__play,.yt-facade:focus-visible .yt-facade__play{background:var(--primary-color);transform:scale(1.05)}
 .yt-facade__play::before{content:"";position:absolute;top:50%;left:50%;transform:translate(-40%,-50%);border-style:solid;border-width:11px 0 11px 19px;border-color:transparent transparent transparent #fff}
+
+@media(max-width:1000px){#banner-logo{background-image:image-set(url(images/airstrike-jet-dragon-icon-sm.webp) type("image/webp"),url(images/airstrike-jet-dragon-icon.png) type("image/png"))}}
+
+@media(max-width:1000px){header{background-image:image-set(url(images/airstrike-home-banner-sm.webp) type("image/webp"),url(images/airstrike-home-banner.jpg) type("image/jpeg"))}}
