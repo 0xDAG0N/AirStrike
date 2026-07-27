@@ -331,10 +331,6 @@ section div>p {
 	line-height: 1.8
 }
 
-#airstrike-highlights h1 {
-	text-align: center
-}
-
 #airstrike-highlights i {
 	color: var(--primary-color)
 }
@@ -346,7 +342,8 @@ section div>p {
 #airstrike-highlights>div {
 	margin: auto;
 	width: 90%;
-	max-width: 700px
+	max-width: 700px;
+	text-align: center
 }
 
 #airstrike-highlights figure {
