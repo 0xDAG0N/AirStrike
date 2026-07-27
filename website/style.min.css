@@ -863,13 +863,15 @@ aside li li.active::before {
 }
 
 main>section {
-	width: calc(100% - var(--sidebar-width) - var(--margins));
-	margin-left: var(--margins)
-}
-
-main>section:only-child {
+	width: 100%;
 	margin-left: auto;
 	margin-right: auto
+}
+
+main>aside~section {
+	width: calc(100% - var(--sidebar-width) - var(--margins));
+	margin-left: var(--margins);
+	margin-right: 0
 }
 
 main>section>h1 i {

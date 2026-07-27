@@ -900,13 +900,15 @@ aside li li.active::before {
 }
 
 main>section {
-	width: calc(100% - var(--sidebar-width) - var(--margins));
-	margin-left: var(--margins)
-}
-
-main>section:only-child {
+	width: 100%;
 	margin-left: auto;
 	margin-right: auto
+}
+
+main>aside~section {
+	width: calc(100% - var(--sidebar-width) - var(--margins));
+	margin-left: var(--margins);
+	margin-right: 0
 }
 
 main>section>h1 i {
@@ -1767,10 +1769,6 @@ section div>p {
 	line-height: 1.8
 }
 
-#airstrike-highlights h1 {
-	text-align: center
-}
-
 #airstrike-highlights i {
 	color: var(--primary-color)
 }
@@ -1782,7 +1780,8 @@ section div>p {
 #airstrike-highlights>div {
 	margin: auto;
 	width: 90%;
-	max-width: 700px
+	max-width: 700px;
+	text-align: center
 }
 
 #airstrike-highlights figure {
