@@ -772,7 +772,8 @@ header.bg-cover nav:not(.show-menu) button {
 
 main {
 	--margins: 30px;
-	--sidebar-width: 250px;
+	/* flex is load-bearing: it stops main>* margin-top collapsing out of the
+	   box, which min-height below depends on. Do not switch to block. */
 	display: flex;
 	align-items: start;
 	min-height: calc(100vh - 674px)
@@ -782,100 +783,10 @@ main>* {
 	margin-top: var(--margins)
 }
 
-aside.card,
-article.card {
-	display: block
-}
-
-aside {
-	position: sticky;
-	top: var(--margins);
-	width: var(--sidebar-width);
-	padding: 20px 10px
-}
-
-aside>a {
-	position: absolute
-}
-
-aside>a::before {
-	position: absolute;
-	font-family: themify;
-	content: "\e64a";
-	font-size: 25px;
-	color: inherit;
-	z-index: 1;
-	left: -3px;
-	top: -3px;
-	width: 35px;
-	height: 35px;
-	line-height: 35px;
-	border-radius: 100%;
-	background: var(--light-color);
-	text-align: center
-}
-
-aside>ul>li::before {
-	display: none
-}
-
-aside>ul>li>a {
-	font-size: 20px;
-	margin-left: 20px
-}
-
-aside li ul:not(:empty) {
-	max-height: calc(100vh - 240px);
-	overflow: auto;
-	scrollbar-width: thin;
-	scrollbar-color: #CCC transparent
-}
-
-aside li ul::-webkit-scrollbar {
-	width: 3px
-}
-
-aside li ul::-webkit-scrollbar-track {
-	background: 0 0
-}
-
-aside li ul::-webkit-scrollbar-thumb {
-	background: #ccc
-}
-
-aside li li {
-	margin: 1em 0;
-	font-size: 13px
-}
-
-aside li li a {
-	color: var(--text-color-dark);
-	display: block;
-	margin: 0
-}
-
-aside li li.active a {
-	color: var(--primary-color)
-}
-
-aside li li.active::before {
-	opacity: 1
-}
-
 main>section {
 	width: 100%;
 	margin-left: auto;
 	margin-right: auto
-}
-
-main>aside~section {
-	width: calc(100% - var(--sidebar-width) - var(--margins));
-	margin-left: var(--margins);
-	margin-right: 0
-}
-
-main>section>h1 i {
-	margin-right: 8px
 }
 
 article {
@@ -883,22 +794,6 @@ article {
 }
 
 @media(max-width:1000px) {
-	main {
-		flex-wrap: wrap
-	}
-
-	aside,
-	main>section {
-		width: 100%;
-		margin-left: 0
-	}
-
-	aside {
-		position: relative;
-		top: 0;
-		order: 2
-	}
-
 	article {
 		padding: 1.5em
 	}
